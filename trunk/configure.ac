@@ -85,6 +85,25 @@ dnl =======================
 
 dnl need to add some c++ checks here, templates, typename etc.
 
+
+dnl =================
+dnl configure options
+dnl =================
+dnl
+dnl do we build the test apps?
+dnl
+
+AC_ARG_ENABLE(test-apps,
+	AC_HELP_STRING([--disable-test-apps], [do not build the test apps]),
+	[case "${enableval}" in
+		yes) tmp_BUILD_TESTS_APPS=yes ;;
+		no)  tmp_BUILD_TESTS_APPS=no ;;
+		*) AC_MSG_ERROR(bad value ${enableval} for --enable-test-apps) ;;
+     esac],
+	 [tmp_BUILD_TESTS_APPS=yes])
+
+AM_CONDITIONAL(BUILD_TEST_APPS, [test x$tmp_BUILD_TESTS_APPS = xyes])
+
 dnl ============
 dnl Output Files
 dnl ============
