@@ -15,6 +15,7 @@ library_include_HEADERS = \
 	Exception.h \
 	InetAddress.h \
 	InetException.h \
+	MapIterator.h \
 	NamedPipe.h \
 	NamedPipeException.h \
 	Point.h \
