@@ -65,7 +65,7 @@ StateNode::breakPath(const std::string& path, std::list<std::string>& pathSegmen
 
 	while(!done)
 	{
-		unsigned int pos = path.find("/", marker) ;
+		std::string::size_type pos = path.find("/", marker) ;
 
 		if(pos == std::string::npos)
 		{
