@@ -1,0 +1,14 @@
+# $Id$
+#
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @LIBRARY_NAME@
+Description: claw's collection of usefull utilities.
+Requires:
+Version: @LIBRARY_VERSION@
+Libs: -L${libdir} -lcutil
+Cflags: -I${includedir}

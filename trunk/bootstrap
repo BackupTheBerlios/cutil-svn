@@ -1,0 +1,73 @@
+#!/bin/sh
+# $Id$
+
+CONFIGURE_PARAM_STRING="-c"
+MAKE_PARAM_STRING="-m"
+
+CONFIGURE_OPTS=""
+MAKE_OPTS=""
+DO_CONFIGURE=0
+DO_MAKE=0
+
+DEFAULT_PREFIX="/usr/local/"
+DEFAULT_QUICK_CONFIGURE="--prefix=$DEFAULT_PREFIX"
+DEFAULT_QUICK_MAKE="all"
+
+rm -f config.cache acconfig.h
+
+echo "- libtoolize."
+libtoolize --force
+
+if [ -e "./m4" ]
+then
+	echo "- aclocal -I ./m4/."
+	aclocal -I ./m4/
+else
+	echo "- aclocal"
+	aclocal
+fi
+
+echo "- autoconf."
+autoconf
+echo "- automake."
+automake --add-missing
+
+while getopts "m:c:q" options ; do
+	case "$options" in
+		c) CONFIGURE_OPTS="$CONFIGURE_OPTS $OPTARG"
+		   DO_CONFIGURE=1
+		   ;;
+		m) MAKE_OPTS="$MAKE_OPTS $OPTARG"
+		   DO_MAKE=1
+		   ;;
+		q) DO_CONFIGURE=1
+		   DO_MAKE=1
+		   CONFIGURE_OPTS="$DEFAULT_QUICK_CONFIGURE"
+		   MAKE_OPTS="$DEFAULT_QUICK_MAKE"
+		   ;;
+	esac
+done
+shift $((OPTIND-1))
+
+# track the exit code from the configure script
+# if it fails, the theres no point in trying torun make yet
+CONFIGURE_EXIT_STATUS=0
+
+if [ "$DO_CONFIGURE" -eq 1 ]
+then
+	echo "- configure $CONFIGURE_OPTS"
+	./configure $CONFIGURE_OPTS
+	CONFIGURE_EXIT_STATUS=$?
+fi
+
+if [ "$DO_MAKE" -eq 1 ]
+then
+	# check the configure status
+	# we want a status of 0 to indicate that the configure script exited sucessfully
+	if [ "$CONFIGURE_EXIT_STATUS" -eq 0 ]
+	then
+		echo "- make $MAKE_OPTS"
+		make $MAKE_OPTS
+	fi
+fi
+
