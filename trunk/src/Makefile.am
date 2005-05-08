@@ -7,6 +7,10 @@ AM_CXXFLAGS = -Wall -Werror -ansi -pedantic-errors
 
 lib_LTLIBRARIES = libcutil.la
 
+if XMLPP_SUPPORT
+  XML_STATE_HANDLER=XMLStateHandler.cc XMLStateNode.cc
+endif
+
 libcutil_la_SOURCES = \
 	BitHack.cc \
 	Dimension.cc \
@@ -22,8 +26,7 @@ libcutil_la_SOURCES = \
 	SocketException.cc \
 	StateHandler.cc \
 	StateNode.cc \
-	XMLStateHandler.cc \
-	XMLStateNode.cc
+	${XML_STATE_HANDLER}
 
 libcutil_la_LIBADD = ${XMLPP_LIBS}
 

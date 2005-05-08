@@ -69,14 +69,22 @@ AC_PROG_INSTALL
 
 AC_LANG_CPLUSPLUS
 
+
+dnl ===============================
+dnl Initialize useful env variables
+dnl ===============================
+
+if test -z $PKG_CONFIG_PATH; then
+        PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig
+fi
+
+export PKG_CONFIG_PATH
+
+
 dnl =====================
 dnl Checks for libraries.
 dnl =====================
 
-PKG_CHECK_MODULES(XMLPP, libxml++-2.6)
-
-AC_SUBST(XMLPP_CFLAGS)
-AC_SUBST(XMLPP_LIBS)
 
 
 dnl =======================
@@ -89,7 +97,30 @@ dnl need to add some c++ checks here, templates, typename etc.
 dnl =================
 dnl configure options
 dnl =================
+
+dnl =============
+dnl xml++ support
 dnl
+
+AC_ARG_WITH(libxmlpp, AC_HELP_STRING([--with-libxmlpp], [build support (default=yes)]),
+	[case "${withval}" in
+		yes) tmp_WITH_XMLPP=yes;;
+		no)  tmp_WITH_XMLPP=no;;
+		*)   AC_MSG_ERROR(bad value ${withval} for --with-libxmlpp) ;;
+	esac],
+	[tmp_WITH_XMLPP=yes])
+
+if test x$tmp_WITH_XMLPP = xyes; then
+	PKG_CHECK_MODULES([XMLPP], [libxml++-2.6], [tmp_XMLPP_SUP=yes], )
+else
+	tmp_XMLPP_SUP=no
+fi
+
+AM_CONDITIONAL(XMLPP_SUPPORT, [test x$tmp_XMLPP_SUP = xyes])
+AC_SUBST(XMLPP_CFLAGS)
+AC_SUBST(XMLPP_LIBS)
+
+dnl ==========================
 dnl do we build the test apps?
 dnl
 
@@ -98,9 +129,9 @@ AC_ARG_ENABLE(test-apps,
 	[case "${enableval}" in
 		yes) tmp_BUILD_TESTS_APPS=yes ;;
 		no)  tmp_BUILD_TESTS_APPS=no ;;
-		*) AC_MSG_ERROR(bad value ${enableval} for --enable-test-apps) ;;
-     esac],
-	 [tmp_BUILD_TESTS_APPS=yes])
+		*)   AC_MSG_ERROR(bad value ${enableval} for --enable-test-apps) ;;
+	esac],
+	[tmp_BUILD_TESTS_APPS=yes])
 
 AM_CONDITIONAL(BUILD_TEST_APPS, [test x$tmp_BUILD_TESTS_APPS = xyes])
 
@@ -114,3 +145,15 @@ AC_OUTPUT(Makefile \
           src/cutil/Makefile \
           tests/Makefile
 )
+
+
+
+AC_MSG_NOTICE([
+---------------------------------------------
+Cutil configuration summary:
+
+installation path:        ${prefix}
+build xml state handling: $tmp_XMLPP_SUP
+build test applications:  $tmp_BUILD_TESTS_APPS
+---------------------------------------------
+])

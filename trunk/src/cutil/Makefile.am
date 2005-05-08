@@ -6,6 +6,10 @@ library_includedir=${includedir}/${LIBRARY_NAME}
 #but its a bit overkill at the moment
 #library_includedir=$(includedir)/$(LIBRARY_NAME)-$(LIBRARY_RELEASE)/$(LIBRARY_NAME)
 
+if XMLPP_SUPPORT
+  XML_STATE_HANDLER=XMLStateHandler.h XMLStateNode.h
+endif
+
 library_include_HEADERS = \
 	AbstractShape.h \
 	BitHack.h \
@@ -27,8 +31,7 @@ library_include_HEADERS = \
 	Stateable.h \
 	StateHandler.h \
 	StateNode.h \
-	XMLStateHandler.h \
-	XMLStateNode.h
+	${XML_STATE_HANDLER}
 
 
 
