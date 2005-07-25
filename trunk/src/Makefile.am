@@ -3,7 +3,7 @@
 SUBDIRS = cutil
 
 INCLUDES = -I. ${XMLPP_CFLAGS}
-AM_CXXFLAGS = -Wall -Werror -ansi -pedantic-errors
+AM_CXXFLAGS = -W -Wall -Werror -ansi -pedantic-errors
 
 lib_LTLIBRARIES = libcutil.la
 
@@ -15,6 +15,7 @@ libcutil_la_SOURCES = \
 	BitHack.cc \
 	Dimension.cc \
 	Exception.cc \
+	FilePath.cc \
 	InetAddress.cc \
 	InetException.cc \
 	NamedPipe.cc \

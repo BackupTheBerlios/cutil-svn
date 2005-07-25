@@ -17,6 +17,7 @@ library_include_HEADERS = \
 	Dimension.h \
 	Enum.h \
 	Exception.h \
+	FilePath.h \
 	InetAddress.h \
 	InetException.h \
 	MapIterator.h \
