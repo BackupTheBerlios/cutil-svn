@@ -28,6 +28,6 @@ using namespace cutil ;
  *
  * @param message the error message
  */
-SocketException::SocketException(std::string message) : Exception(message)
+SocketException::SocketException(const std::string& message) : Exception(message)
 {}
 

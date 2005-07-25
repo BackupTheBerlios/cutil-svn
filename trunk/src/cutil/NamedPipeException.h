@@ -43,7 +43,7 @@ namespace cutil
 			 *
 			 * @param message the error message
 			 */
-			NamedPipeException(std::string message) ;
+			NamedPipeException(const std::string& message) ;
 
 			//-------------------------------------------------------------------------------//
 

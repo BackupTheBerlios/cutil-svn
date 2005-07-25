@@ -48,7 +48,7 @@ namespace cutil
 			 *
 			 * @param message the error message
 			 */
-			Exception(std::string message) ;
+			Exception(const std::string& message) ;
 
 			/**
 			 * Destructor
@@ -64,7 +64,7 @@ namespace cutil
 			 *
 			 * @return the error message as std::string
 			 */
-			virtual std::string toString() ;
+			virtual const std::string& toString() const ;
 
 			/**
 			 * Returns the error message as a char*

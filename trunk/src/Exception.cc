@@ -31,7 +31,7 @@ using namespace cutil ;
  *
  * @param message the error message
  */
-Exception::Exception(std::string message) : theMessage(message)
+Exception::Exception(const std::string& message) : theMessage(message)
 {}
 
 /**
@@ -54,7 +54,7 @@ const char* Exception::what() const throw()
  *
  * @return the error message as std::string
  */
-std::string Exception::toString()
+const std::string& Exception::toString() const
 {
 	return(theMessage) ;
 }

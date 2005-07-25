@@ -43,7 +43,7 @@ namespace cutil
 			 *
 			 * @param message the error message
 			 */
-			InetException(std::string message) ;
+			InetException(const std::string& message) ;
 
 			//-------------------------------------------------------------------------------//
 

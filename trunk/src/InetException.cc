@@ -28,6 +28,6 @@ using cutil::InetException ;
  *
  * @param message the error message
  */
-InetException::InetException(std::string message) : Exception(message)
+InetException::InetException(const std::string& message) : Exception(message)
 {}
 

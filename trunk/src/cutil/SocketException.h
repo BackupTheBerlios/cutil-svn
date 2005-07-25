@@ -43,7 +43,7 @@ namespace cutil
 			 *
 			 * @param message the error message
 			 */
-			SocketException(std::string message) ;
+			SocketException(const std::string& message) ;
 			
 			//-------------------------------------------------------------------------------//
 

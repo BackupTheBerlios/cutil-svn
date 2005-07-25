@@ -29,6 +29,6 @@ using cutil::NamedPipeException ;
  *
  * @param message the error message
  */
-NamedPipeException::NamedPipeException(std::string message) : Exception(message)
+NamedPipeException::NamedPipeException(const std::string& message) : Exception(message)
 {}
 
