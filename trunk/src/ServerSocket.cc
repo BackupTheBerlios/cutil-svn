@@ -38,6 +38,8 @@
 
 using namespace cutil ;
 
+const int ServerSocket::DEFAULT_BACKLOG = 5 ;
+
 //-------------------------------------------------------------------------------//
 // Constructor / Desctructor
 
@@ -163,9 +165,7 @@ ServerSocket::accept() throw(SocketException)
 				throw(SocketException(std::string("Exception in accept [inet_ntop]:").append(::strerror(errno)))) ;
 			}
 
-			int port = ntohs(sockAddr.sin_port) ;
-
-			newConnection.reset(new Socket(std::string(host), port, retcode)) ;
+			newConnection.reset(new Socket(retcode)) ;
 		}
 	}
 	else
@@ -362,9 +362,7 @@ ServerSocket::setReuseAddress(bool yn) throw(SocketException)
 {
 	if(theState == UNBOUND_ENUM)
 	{
-		int optval = 1 ;
-		socklen_t optlen = static_cast<socklen_t>(sizeof(optval)) ;
-		if(::setsockopt(theSocketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+		if(::setsockopt(theSocketDescriptor, SOL_SOCKET, SO_REUSEADDR, &yn, static_cast<socklen_t>(sizeof(yn))) == -1)
 		{
 			throw(InetException(std::string("Exception in setReuseAddress [setsockopt]:").append(::strerror(errno)))) ;
 		}

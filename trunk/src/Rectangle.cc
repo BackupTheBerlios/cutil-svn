@@ -48,6 +48,7 @@ Rectangle::Rectangle()
  * @param r the Rectangle to copy
  */
 Rectangle::Rectangle(const Rectangle& r)
+ : AbstractShape()
 {
 	theX = r.getX() ;
 	theY = r.getY() ;

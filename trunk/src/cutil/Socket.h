@@ -69,17 +69,15 @@ namespace cutil
 			Socket(const std::string& host, int port) throw(InetException, SocketException) ;
 
 			/**
-			 * Creates a Socket from the specified file descriptor connected to the specified host and port.
-			 * This method acts as a wrapper around a constructed socket and file descriptor.
+			 * Creates a Socket from the specified file descriptor.
+			 * This method acts as a wrapper around a constructed socket descriptor.
 			 * This method is intended as a convenient constructor for the creation of a Socket to 'wrap'
 			 * the file descriptor returned from a successful call to accept of a ServerSocket
 			 *
-			 * @param host the remote host this Socket is connected to
-			 * @param port the remote port
 			 * @param fd the file descriptor used for socket communications
 			 * @throws SocketException if fd is not a valid socket file descriptor
 			 */
-			Socket(const InetAddress& host, int port, int fd) throw(SocketException) ;
+			Socket(int fd) throw(SocketException) ;
 
 			/**
 			 * Destructor.
@@ -229,7 +227,7 @@ namespace cutil
 			//-------------------------------------------------------------------------------//
 
 			/** Default max size for read buffer during read from socket */
-			static const int DEFAULT_MAXRECV = 500 ;
+			static const int DEFAULT_MAXRECV ;
 
 			//-------------------------------------------------------------------------------//
 

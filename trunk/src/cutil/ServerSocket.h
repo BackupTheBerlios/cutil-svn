@@ -179,7 +179,7 @@ namespace cutil
 			//-------------------------------------------------------------------------------//
 
 			/** Default backlog value */
-			static const int DEFAULT_BACKLOG = 5 ;
+			static const int DEFAULT_BACKLOG ;
 
 			//-------------------------------------------------------------------------------//
 
