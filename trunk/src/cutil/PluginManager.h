@@ -764,7 +764,7 @@ namespace cutil
 	 * within the managaing PluginManager.
 	 * 
 	 * @author Colin Law [claw@mail.berlios.de]
-	 * @version $Rev: 2 $
+	 * @version $Rev$
 	 */
 	template <class T>
 	class PluginHandle
