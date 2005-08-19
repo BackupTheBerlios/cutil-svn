@@ -20,9 +20,14 @@ libcutil_la_SOURCES = \
 	InetException.cc \
 	NamedPipe.cc \
 	NamedPipeException.cc \
+	PluginInfo.cc \
+	PluginManager.cc \
+	PluginManagerException.cc \
 	Point.cc \
 	Rectangle.cc \
 	ServerSocket.cc \
+	SharedLibrary.cc \
+	SharedLibraryException.cc \
 	Socket.cc \
 	SocketException.cc \
 	StateHandler.cc \

@@ -23,10 +23,16 @@ library_include_HEADERS = \
 	MapIterator.h \
 	NamedPipe.h \
 	NamedPipeException.h \
+	Plugin.h \
+	PluginFactory.h \
+	PluginInfo.h \
+	PluginManager.h \
 	Point.h \
 	Rectangle.h \
 	RefCountPtr.h \
 	ServerSocket.h \
+	SharedLibrary.h \
+	SharedLibraryException.h \
 	Socket.h \
 	SocketException.h \
 	Stateable.h \
