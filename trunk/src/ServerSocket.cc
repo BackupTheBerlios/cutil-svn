@@ -362,7 +362,8 @@ ServerSocket::setReuseAddress(bool yn) throw(SocketException)
 {
 	if(theState == UNBOUND_ENUM)
 	{
-		if(::setsockopt(theSocketDescriptor, SOL_SOCKET, SO_REUSEADDR, &yn, static_cast<socklen_t>(sizeof(yn))) == -1)
+		int i = yn ? 1 : 0 ;
+		if(::setsockopt(theSocketDescriptor, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(int)) == -1)
 		{
 			throw(InetException(std::string("Exception in setReuseAddress [setsockopt]:").append(::strerror(errno)))) ;
 		}
