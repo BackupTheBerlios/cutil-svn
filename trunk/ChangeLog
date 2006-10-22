@@ -1,3 +1,14 @@
-[2005-01-10]
+2006-10-22  claw
+
+	* src/cutil/Makefile.am, Conversion.h, StringUtilities.h
+	  src/Makefile.am, StringUtilities.cc:
+
+	  added various static conversion and string utility methods
+
+	* src/cutil/Enum.h:
+
+	  made copy costructor protected.
+
+2005-01-10  claw
 
   Initial Move to developer.berlios.de

@@ -32,6 +32,7 @@ libcutil_la_SOURCES = \
 	SocketException.cc \
 	StateHandler.cc \
 	StateNode.cc \
+	StringUtilities.cc \
 	${XML_STATE_HANDLER}
 
 libcutil_la_LIBADD = ${XMLPP_LIBS}

@@ -14,6 +14,7 @@ library_include_HEADERS = \
 	AbstractShape.h \
 	BitHack.h \
 	Closure.h \
+	Conversion.h \
 	Dimension.h \
 	Enum.h \
 	Exception.h \
@@ -38,6 +39,7 @@ library_include_HEADERS = \
 	Stateable.h \
 	StateHandler.h \
 	StateNode.h \
+	StringUtilities.h \
 	${XML_STATE_HANDLER}
 
 

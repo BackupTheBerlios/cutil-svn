@@ -270,6 +270,8 @@ namespace cutil
 			 * @param description a brief description of the enum value
 			 */
 			explicit Enum(const std::string& description) ;
+			
+			explicit Enum(const Enum<T>&) {} ;
 
 
 
