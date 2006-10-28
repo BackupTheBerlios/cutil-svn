@@ -11,8 +11,11 @@ if XMLPP_SUPPORT
 endif
 
 library_include_HEADERS = \
+	AbstractInputStream.h \
+	AbstractOutputStream.h \
 	AbstractShape.h \
 	BitHack.h \
+	BufferedOutputWriter.h \
 	Closure.h \
 	Conversion.h \
 	Dimension.h \
@@ -21,6 +24,7 @@ library_include_HEADERS = \
 	FilePath.h \
 	InetAddress.h \
 	InetException.h \
+	InputReader.h \
 	MapIterator.h \
 	NamedPipe.h \
 	NamedPipeException.h \

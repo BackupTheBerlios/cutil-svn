@@ -138,7 +138,7 @@ ServerSocket::accept() throw(SocketException)
 
 	if(theState == LISTENING_ENUM)
 	{
-		// structure to popu;late with the new connectrion details, remote address address of the connection etc
+		// structure to populate with the new connectrion details, remote address address of the connection etc
 		struct sockaddr_in sockAddr ;
 		int addrLength = sizeof(sockAddr) ;
 

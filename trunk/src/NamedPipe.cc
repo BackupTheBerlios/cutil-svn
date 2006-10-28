@@ -47,11 +47,11 @@ using cutil::NamedPipeException ;
  */
 NamedPipe::NamedPipe()
 {
-	theFileSystemPath = std::string("") ;
-	theFd = -1 ;
-	theCreatedFlag = false ;
-	theAccessMode = READ_ONLY_ENUM ;
-	theBlockStateFlag = false ;
+	m_file_system_path = std::string("") ;
+	m_fd = -1 ;
+	m_created = false ;
+	m_access_mode = READ_ONLY_ENUM ;
+	m_blocking = false ;
 }
 
 /**
@@ -66,11 +66,11 @@ NamedPipe::NamedPipe()
  */
 NamedPipe::NamedPipe(const std::string& path, AccessModeEnum mode, bool blocking) throw(NamedPipeException)
 {
-	theFileSystemPath = path ;
-	theFd = -1 ;
-	theCreatedFlag = false ;
-	theAccessMode = mode ;
-	theBlockStateFlag = blocking ;
+	m_file_system_path = path ;
+	m_fd = -1 ;
+	m_created = false ;
+	m_access_mode = mode ;
+	m_blocking = blocking ;
 
 	// throws NamedPipeException
 	create() ;
@@ -111,24 +111,24 @@ NamedPipe::~NamedPipe()
 void
 NamedPipe::create() throw(NamedPipeException)
 {
-	if(!theCreatedFlag)
+	if(!m_created)
 	{
 		// first does the fifo already exists?
-		if(!theFileSystemPath.empty())
+		if(!m_file_system_path.empty())
 		{
 			struct stat statbuf ;
-			if(::stat(theFileSystemPath.c_str(), &statbuf) == 0)
+			if(::stat(m_file_system_path.c_str(), &statbuf) == 0)
 			{
 				// yes it does, check its really a fifo
 				if(S_ISFIFO(statbuf.st_mode))
 				{
 					// yes it is
-					theCreatedFlag = true ;
+					m_created = true ;
 				}
 				else
 				{
-					theCreatedFlag = false ;
-					throw(NamedPipeException(std::string("File exists, ").append(theFileSystemPath).append(", but it isn't a FIFO"))) ;
+					m_created = false ;
+					throw(NamedPipeException(std::string("File exists, ").append(m_file_system_path).append(", but it isn't a FIFO"))) ;
 				}
 			}
 			else
@@ -136,15 +136,15 @@ NamedPipe::create() throw(NamedPipeException)
 				// error returned from stat, hopefully this means that the spedified path simply doesn't exist
 				if(errno == ENOENT)
 				{
-					if(::mkfifo(theFileSystemPath.c_str(), 0666) == 0)
+					if(::mkfifo(m_file_system_path.c_str(), 0666) == 0)
 					{
 						// created ok
-						theCreatedFlag = true ;
+						m_created = true ;
 					}
 					else
 					{
-						theCreatedFlag = false ;
-						throw(NamedPipeException(std::string("Exception in create [mkfifo]: Cannot create NamedPipe, ").append(theFileSystemPath))) ;
+						m_created = false ;
+						throw(NamedPipeException(std::string("Exception in create [mkfifo]: Cannot create NamedPipe, ").append(m_file_system_path))) ;
 					}
 				}
 				else
@@ -155,7 +155,7 @@ NamedPipe::create() throw(NamedPipeException)
 		}
 		else
 		{
-			theCreatedFlag = false ;
+			m_created = false ;
 			throw(NamedPipeException(std::string("Cannot create NamedPipe, pathname is empty"))) ;
 		}
 	}
@@ -176,36 +176,36 @@ NamedPipe::open() throw(NamedPipeException)
 	if(!isOpen())
 	{
 		int flags ;
-		switch(theAccessMode)
+		switch(m_access_mode)
 		{
 			case NamedPipe::READ_ONLY_ENUM:
 			{
-				flags = O_RDONLY|O_NONBLOCK ;
+				flags = O_RDONLY ;
 				break ;
 			}
 			case NamedPipe::WRITE_ONLY_ENUM:
 			{
-				flags = O_WRONLY|O_NONBLOCK ;
+				flags = O_WRONLY ;
 				break ;
 			}
 			case NamedPipe::READ_WRITE_ENUM:
 			{
-				flags = O_RDWR|O_NONBLOCK ;
+				flags = O_RDWR ;
 			}
 			default:
 			{
-				flags = O_RDONLY|O_NONBLOCK ;
+				flags = O_RDONLY ;
 			}
 		}
 
-		if(theBlockStateFlag)
+		if(m_blocking)
 		{
 			flags = flags|O_NONBLOCK ;
 		}
 
-		theFd = ::open(theFileSystemPath.c_str(), flags) ;
+		m_fd = ::open(m_file_system_path.c_str(), flags) ;
 
-		if(theFd < 0)
+		if(m_fd < 0)
 		{
 			throw(NamedPipeException(std::string("Exception in open [open]:").append(::strerror(errno)))) ;
 		}
@@ -222,9 +222,9 @@ NamedPipe::close() throw(NamedPipeException)
 {
 	if(isOpen())
 	{
-		if(::close(theFd) == 0)
+		if(::close(m_fd) == 0)
 		{
-			theFd = -1 ;
+			m_fd = -1 ;
 		}
 		else
 		{
@@ -242,133 +242,157 @@ NamedPipe::close() throw(NamedPipeException)
 void
 NamedPipe::unlink() throw(NamedPipeException)
 {
-	if(::unlink(theFileSystemPath.c_str()) != 0)
+	if(::unlink(m_file_system_path.c_str()) != 0)
 	{
 		throw(NamedPipeException(std::string("Exception in unlink [unlink]:").append(::strerror(errno)))) ;
 	}
 }
 
 //-------------------------------------------------------------------------------//
-// Named Pipe Read/Write Operations
+// General Accessors/Murators
 
 /**
- * Writes the specified char to the NamedPipe.
- * This method does not throw any exception and is intended as a real-time call.
- * The return value indicates the status of the underlying write call, on failure
- * errcode will be set to the error code of the underlying call. see write(2) for
- * definitions of the return value and error codes
+ * Sets the path of this NamedPipe
+ * This method can only be called on a NamedPipe that has not already had create,
+ * or open called upon it, doing wo will cause an Exception.
  *
- * @param writeByte the byte to write
- * @param errCode set to errno of the underlying call on error
- */
-int
-NamedPipe::write(const char& writeByte, int& errCode) throw()
-{
-	ssize_t written = ::write(theFd, &writeByte, 1) ;
-
-	if(written < 0)
-	{
-		errCode = errno ;
-	}
-
-	return(written) ;
-}
-
-/**
- * Writes the specified char to the NamedPipe
- *
- * @param writeByte the byte to write
- * @throw NamedPipeException on error
+ * @param path filoesystem path of this NamedPipe
+ * @throws NamedPipeException if called upon a created, or opened NamedPipe
  */
 void
-NamedPipe::write(const char& writeByte) throw(NamedPipeException)
+NamedPipe::setPath(const std::string& path)
 {
-	ssize_t written = ::write(theFd, &writeByte, 1) ;
-
-	if(written < 0)
+	if(isCreated() || isOpen())
 	{
-		throw(NamedPipeException(std::string("Exception in write [write]:").append(::strerror(errno)))) ;
-	}
-}
-
-
-/**
- * Attempts to read a byte from this NamedPipe.
- * The read byte will be set within the readByte parameter.
- * This method does not throw any Exception and is intended as a real-time call in
- * a non-blocking state (although can be used anywhere)
- * If this NamedPipe is in a blocking state, this method will block until a byte
- * is available for reading.
- * The return value indicates the return satus of the underlying call, on failure
- * errcode will be set to the error code of the underlying call, see read(2) for
- * definitions of the return value and error codes.
- *
- * @param readByte the parameter to set with the read byte
- * @param errCode set to the errno of the underlying call
- * @return the return status of the underlying call
- */
-int
-NamedPipe::read(char& readByte, int& errCode) throw()
-{
-	ssize_t bytesRead = ::read(theFd, &readByte, 1) ;
-
-	if(bytesRead < 0)
-	{
-		errCode = errno ;
-	}
-
-	return(bytesRead) ;
-}
-
-/**
- * Attempts to read a byte from this NamedPipe.
- * The read byte will be set within the readByte parameter.
- * This method will block until data a byte is available for reading on this
- * NamedPipe, unless in a non-blocking state. If in non-blocking mode, a read
- * when no data is available will not throw an exception, however false will be returned.
- *
- * @param readByte the parameter to set with the read byte
- * @return true if a byte was read, false otherwise
- * @throw NamedPipeException on read error
- */
-bool
-NamedPipe::read(char& readByte) throw(NamedPipeException)
-{
-	bool ret = false ;
-
-	int retcode = ::read(theFd, &readByte, 1) ;
-
-	if(retcode < 0)
-	{
-		throw(NamedPipeException(std::string("Exception in read [read]:").append(::strerror(errno)))) ;
+		throw(NamedPipeException("Cannot set file system path on a created NamedPipe")) ;
 	}
 	else
 	{
-		ret = true ;
+		m_file_system_path = path ;
 	}
-
-	return(ret) ;
 }
 
 /**
- * Determines if data is available for reading from this NamedPipe
+ * Returns the filesystem path of this NamedPipe
+ * This method returns only the set filesystem path, this path may not have been created
+ * and may not be a valid filesystem path for this NamedPipe. Use isCreated to detemine
+ * if the path is indeed valid and created.
  *
- * @param timeout timeout for waiting for data in milliseconds
- * @return true if data is available for reading, false otherwise
- * @throw NamedPipeException if and error occurs or the FIFO has been hung up.
+ * @return the filesystem path of this NamedPipe
+ */
+std::string
+NamedPipe::getPath() const
+{
+	return(m_file_system_path) ;
+}
+
+/**
+ * Sets the blocking state of this NamedPipe.
+ * This method can only be called upon an unopened NamedPipe, doing so on an open NamedPipe
+ * will result in an Exception being thrown
+ *
+ * @param blockState the block state of this NamedPipe
+ * @throws NamedPipeException if the this NamedPipe is already open
+ */
+void
+NamedPipe::setBlockState(bool blockState)
+{
+	if(isOpen())
+	{
+		throw(NamedPipeException("Cannot set Block State on an open NamedPipe")) ;
+	}
+	else
+	{
+		m_blocking = blockState ;
+	}
+}
+
+/**
+ * Returns the blocking state of this NamedPipe.
+ * The blocking state indicate if this namedPipe is set to open in a blocking or non-blocking manner.
+ * This method may be called on an open, or non open NamedPipe to determine what state it is, or
+ * will be in
+ *
+ * @return the blocking state of this NamedPipe
  */
 bool
-NamedPipe::dataAvailable(int timeout) const throw(NamedPipeException)
+NamedPipe::getBlockState() const
+{
+	return(m_blocking) ;
+}
+
+/**
+ * Sets the access mode of this NamedPipe
+ * This method can only be called upon as unopened namedPipe, doing so on an open NamedPipe
+ * will result in an Exception being thrown
+ *
+ * @param mode the access mode of this NamedPipe
+ * @throws NamedPipeException if called on an open namedPipe
+ */
+void
+NamedPipe::setMode(AccessModeEnum mode)
+{
+	if(isOpen())
+	{
+		throw(NamedPipeException("Cannot set Mode on an open NamedPipe")) ;
+	}
+	else
+	{
+		m_access_mode = mode ;
+	}
+}
+
+/**
+ * Returns the access mode of this NamedPipe
+ *
+ * @return the access mode of this NamedPipe
+ */
+NamedPipe::AccessModeEnum
+NamedPipe::getMode() const
+{
+	return(m_access_mode) ;
+}
+
+
+/**
+ * Returns whether this NamedPipe has been created.
+ * A created NamedPipe has had create called and return successfully
+ *
+ * @return true if this NamedPipe has been created, false otherwise
+ */
+bool
+NamedPipe::isCreated() const
+{
+	return(m_created) ;
+}
+
+/**
+ * Returns whether this NamedPipe has been opened.
+ * 
+ * @return true if this NamedPipe has been opened, false otherwise
+ */
+bool
+NamedPipe::isOpen() const
+{
+	return(m_fd == -1 ? false : true) ;
+}
+
+
+//-------------------------------------------------------------------------------//
+// AbstractInputStream
+
+bool
+NamedPipe::isDataAvailable(long usec) const throw(Exception)
 {
 	bool ret = false ;
 
 	if(isOpen())
 	{
 		::pollfd pfd[1] ;
-		pfd[0].fd = theFd ;
+		pfd[0].fd = m_fd ;
 		pfd[0].events = POLLIN|POLLERR|POLLHUP|POLLNVAL ;
 
-		int pollret = poll(pfd, 1, timeout) ;
+		int pollret = poll(pfd, 1, usec) ;
 
 		if(pollret == -1)
 		{
@@ -406,131 +430,80 @@ NamedPipe::dataAvailable(int timeout) const throw(NamedPipeException)
 	return(ret) ;
 }
 
+ssize_t
+NamedPipe::read(void* buf, size_t length) const throw(Exception)
+{
+	ssize_t retcode = ::read(m_fd, buf, length) ;
+
+	if(retcode < 0)
+	{
+		throw(NamedPipeException(std::string("Exception in read [read]:").append(::strerror(errno)))) ;
+	}
+
+	return(retcode) ;
+}
+
+ssize_t
+NamedPipe::read(void* buf, size_t length, int& err_code) const throw()
+{
+	ssize_t retcode = ::read(m_fd, buf, length) ;
+
+	if(retcode < 0)
+	{
+		err_code = errno ;
+	}
+
+	return(retcode) ;
+}
+
+ssize_t
+NamedPipe::read(char& read_byte) throw(Exception)
+{
+	return(read(&read_byte, 1)) ;
+}
+
+ssize_t
+NamedPipe::read(char& read_byte, int& err_code) throw()
+{
+	return(read(&read_byte, 1, err_code)) ;
+}
+
 //-------------------------------------------------------------------------------//
-// General Accessors/Murators
+// AbstractOutputStream
 
-/**
- * Sets the path of this NamedPipe
- * This method can only be called on a NamedPipe that has not already had create,
- * or open called upon it, doing wo will cause an Exception.
- *
- * @param path filoesystem path of this NamedPipe
- * @throws NamedPipeException if called upon a created, or opened NamedPipe
- */
-void
-NamedPipe::setPath(const std::string& path)
+ssize_t
+NamedPipe::write(const void* data, size_t size) throw(Exception)
 {
-	if(isCreated() || isOpen())
+	ssize_t retcode = ::write(m_fd, data, size) ;
+	if(retcode < 0)
 	{
-		throw(NamedPipeException("Cannot set file system path on a created NamedPipe")) ;
+		throw(Exception(std::string("Exception in write [write]: ").append(::strerror(errno)))) ;
 	}
-	else
+
+	return(retcode) ;
+}
+
+ssize_t
+NamedPipe::write(const void* data, size_t size, int& err_code) throw()
+{
+	ssize_t written = ::write(m_fd, data, size) ;
+
+	if(written < 0)
 	{
-		theFileSystemPath = path ;
+		err_code = errno ;
 	}
+
+	return(written) ;
 }
 
-/**
- * Returns the filesystem path of this NamedPipe
- * This method returns only the set filesystem path, this path may not have been created
- * and may not be a valid filesystem path for this NamedPipe. Use isCreated to detemine
- * if the path is indeed valid and created.
- *
- * @return the filesystem path of this NamedPipe
- */
-std::string
-NamedPipe::getPath() const
+ssize_t
+NamedPipe::write(const char& write_byte) throw(Exception)
 {
-	return(theFileSystemPath) ;
+	return(write(&write_byte, 1)) ;
 }
 
-/**
- * Sets the blocking state of this NamedPipe.
- * This method can only be called upon an unopened NamedPipe, doing so on an open NamedPipe
- * will result in an Exception being thrown
- *
- * @param blockState the block state of this NamedPipe
- * @throws NamedPipeException if the this NamedPipe is already open
- */
-void
-NamedPipe::setBlockState(bool blockState)
+ssize_t
+NamedPipe::write(const char& write_byte, int& err_code) throw()
 {
-	if(isOpen())
-	{
-		throw(NamedPipeException("Cannot set Block State on an open NamedPipe")) ;
-	}
-	else
-	{
-		theBlockStateFlag = blockState ;
-	}
-}
-
-/**
- * Returns the blocking state of this NamedPipe.
- * The blocking state indicate if this namedPipe is set to open in a blocking or non-blocking manner.
- * This method may be called on an open, or non open NamedPipe to determine what state it is, or
- * will be in
- *
- * @return the blocking state of this NamedPipe
- */
-bool
-NamedPipe::getBlockState() const
-{
-	return(theBlockStateFlag) ;
-}
-
-/**
- * Sets the access mode of this NamedPipe
- * This method can only be called upon as unopened namedPipe, doing so on an open NamedPipe
- * will result in an Exception being thrown
- *
- * @param mode the access mode of this NamedPipe
- * @throws NamedPipeException if called on an open namedPipe
- */
-void
-NamedPipe::setMode(AccessModeEnum mode)
-{
-	if(isOpen())
-	{
-		throw(NamedPipeException("Cannot set Mode on an open NamedPipe")) ;
-	}
-	else
-	{
-		theAccessMode = mode ;
-	}
-}
-
-/**
- * Returns the access mode of this NamedPipe
- *
- * @return the access mode of this NamedPipe
- */
-NamedPipe::AccessModeEnum
-NamedPipe::getMode() const
-{
-	return(theAccessMode) ;
-}
-
-
-/**
- * Returns whether this NamedPipe has been created.
- * A created NamedPipe has had create called and return successfully
- *
- * @return true if this NamedPipe has been created, false otherwise
- */
-bool
-NamedPipe::isCreated() const
-{
-	return(theCreatedFlag) ;
-}
-
-/**
- * Returns whether this NamedPipe has been opened.
- * 
- * @return true if this NamedPipe has been opened, false otherwise
- */
-bool
-NamedPipe::isOpen() const
-{
-	return(theFd == -1 ? false : true) ;
+	return(write(&write_byte, 1, err_code)) ;
 }

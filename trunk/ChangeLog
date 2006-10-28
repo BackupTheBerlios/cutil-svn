@@ -1,3 +1,26 @@
+2006-10-27  claw
+
+	* src/cutil/AbstractInputStream.h, AbstractOutputStream.h, Makefile.am:
+
+	  added abstract representation of an input and output stream.
+
+	* src/cutil/InputReader.h, BufferedOutputWriter.h
+	  src/InputReader.cc, BufferedOutputWriter.cc:
+
+	  add convenience wrappers around AbstractInputStream and AbstractOutputStream
+	  to simplify writing of data to a stream.
+
+	* src/cutil/NamedPipe.h, Socket.h
+	  src/NamedPipe.cc, Socket.cc, Makefile.am:
+
+	  now implement both AbstractInputStream and AbstractOutputStream.
+
+	  moved most reading and writing methods to InputReader and BufferedOutputWriter.
+
+	* src/ServerSocket.cc
+
+	  fixed typo in comment in passing.
+
 2006-10-22  claw
 
 	* src/cutil/Makefile.am, Conversion.h, StringUtilities.h

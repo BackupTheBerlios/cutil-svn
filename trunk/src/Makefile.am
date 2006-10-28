@@ -13,11 +13,13 @@ endif
 
 libcutil_la_SOURCES = \
 	BitHack.cc \
+	BufferedOutputWriter.cc \
 	Dimension.cc \
 	Exception.cc \
 	FilePath.cc \
 	InetAddress.cc \
 	InetException.cc \
+	InputReader.cc \
 	NamedPipe.cc \
 	NamedPipeException.cc \
 	PluginInfo.cc \

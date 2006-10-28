@@ -23,6 +23,8 @@
 #ifndef _CUTIL_NAMEDPIPE_
 #define _CUTIL_NAMEDPIPE_
 
+#include <cutil/AbstractInputStream.h>
+#include <cutil/AbstractOutputStream.h>
 #include <cutil/NamedPipeException.h>
 
 #include <string>
@@ -35,10 +37,8 @@ namespace cutil
 	 * applications, non blocking.
 	 * This class is a simple wrapper around common low level named pipe operations.
 	 *
-	 * @author Colin Law [claw@mail.berlios.de]
-	 * @version $Rev$
 	 */
-	class NamedPipe
+	class NamedPipe : public AbstractInputStream, public AbstractOutputStream
 	{
 		public:
 
@@ -73,11 +73,6 @@ namespace cutil
 			 *
 			 */
 			virtual ~NamedPipe() ;
-
-
-			//-------------------------------------------------------------------------------//
-			//
-
 
 			//-------------------------------------------------------------------------------//
 			// Named Pipe Setup Operations
@@ -121,69 +116,6 @@ namespace cutil
 			 */
 			void unlink() throw(NamedPipeException) ;
 
-			//-------------------------------------------------------------------------------//
-			// Named Pipe Read/Write Operations
-
-			/**
-			 * Writes the specified char to the NamedPipe.
-			 * This method does not throw any exception and is intended as a real-time call in a non-blocking state.
-			 * The return value indicates the status of the underlying write call, on failure
-			 * errcode will be set to the error code of the underlying call. see write(2) for
-			 * definitions of the return value and error codes
-			 *
-			 * @param writeByte the byte to write
-			 * @param errCode set to errno of the underlying call on error
-			 * @return the return status of the underlying call
-			 */
-			int write(const char& writeByte, int& errCode) throw() ;
-
-			/**
-			 * Writes the specified char to the NamedPipe
-			 *
-			 * @param writeByte the byte to write
-			 * @throw NamedPipeException on error
-			 */
-			void write(const char& writeByte) throw(NamedPipeException) ;
-
-
-			/**
-			 * Attempts to read a byte from this NamedPipe.
-			 * The read byte will be set within the readByte parameter.
-			 * This method does not throw any Exception and is intended as a real-time call in
-			 * a non-blocking state (although can be used anywhere)
-			 * If this NamedPipe is in a blocking state, this method will block until a byte
-			 * is available for reading.
-			 * The return value indicates the return satus of the underlying call, on failure
-			 * errcode will be set to the error code of the underlying call, see read(2) for
-			 * definitions of the return value and error codes.
-			 *
-			 * @param readByte the parameter to set with the read byte
-			 * @param errCode set to the errno of the underlying call
-			 * @return the return status of the underlying call
-			 */
-			int read(char& readByte, int& errCode) throw() ;
-
-			/**
-			 * Attempts to read a byte from this NamedPipe.
-			 * The read byte will be set within the readByte parameter.
-			 * This method will block until data a byte is available for reading on this
-			 * NamedPipe, unless in a non-blocking state. If in non-blocking mode, a read
-			 * when no data is available will not throw an exception, however false will be returned.
-			 *
-			 * @param readByte the parameter to set with the read byte
-			 * @return true if a byte was read, false otherwise
-			 * @throw NamedPipeException on read error
-			 */
-			bool read(char& readByte) throw(NamedPipeException) ;
-			
-			/**
-			 * Determines if data is available for reading from this NamedPipe
-			 *
-			 * @param timeout timeout for waiting for data in milliseconds
-			 * @return true if data is available for reading, false otherwise
-			 * @throw NamedPipeException if and error occurs or the FIFO has been hung up.
-			 */
-			bool dataAvailable(int timeout) const throw(NamedPipeException) ;
 
 			//-------------------------------------------------------------------------------//
 			// General Accessors/Murators
@@ -213,10 +145,10 @@ namespace cutil
 			 * This method can only be called upon an unopened NamedPipe, doing so on an open NamedPipe
 			 * will result in an Exception being thrown
 			 *
-			 * @param blockState the block state of this NamedPipe
+			 * @param block_state the block state of this NamedPipe
 			 * @throws NamedPipeException if the this NamedPipe is already open
 			 */
-			void setBlockState(bool blockState) ;
+			void setBlockState(bool block_state) ;
 
 			/**
 			 * Returns the blocking state of this NamedPipe.
@@ -262,6 +194,30 @@ namespace cutil
 			bool isOpen() const ;
 
 			//-------------------------------------------------------------------------------//
+			// AbstractInputStream
+
+			virtual bool isDataAvailable(long usec) const throw(Exception) ;
+
+			virtual ssize_t read(void* buf, size_t length) const throw(Exception) ;
+
+			virtual ssize_t read(void* buf, size_t length, int& err_code) const throw() ;
+
+			virtual ssize_t read(char& read_byte) throw(Exception) ;
+
+			virtual ssize_t read(char& read_byte, int& err_code) throw() ;
+
+			//-------------------------------------------------------------------------------//
+			// AbstractOutputStream
+
+			virtual ssize_t write(const void* data, size_t size) throw(Exception) ;
+
+			virtual ssize_t write(const void* data, size_t size, int& err_code) throw() ;
+
+			virtual ssize_t write(const char& write_byte) throw(Exception) ;
+
+			virtual ssize_t write(const char& write_byte, int& err_code) throw() ;
+
+			//-------------------------------------------------------------------------------//
 
 		protected:
 
@@ -270,20 +226,26 @@ namespace cutil
 
 		private:
 
+			/**
+			 * Dis-allow Copy constructor
+			 *
+			 */
+			NamedPipe(const NamedPipe&) : AbstractInputStream(), AbstractOutputStream() {}
+
 			/** the filesysten path of this NamedPipe */
-			std::string theFileSystemPath ;
+			std::string m_file_system_path ;
 
 			/** the File Descriptor of the opened named pipe */
-			int theFd ;
+			int m_fd ;
 
 			/** indicates if this NamedPipe has been created */
-			bool theCreatedFlag ;
+			bool m_created ;
 
 			/** indicates the blocking state of this NamedPipe */
-			bool theBlockStateFlag ;
-			
+			bool m_blocking ;
+
 			/** Inidicates the access mode of this NamedPipe */
-			AccessModeEnum theAccessMode ;
+			AccessModeEnum m_access_mode ;
 
 	} ; /* class NamedPipe */
 

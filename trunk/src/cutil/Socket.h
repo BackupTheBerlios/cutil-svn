@@ -23,6 +23,9 @@
 #ifndef _CUTIL_SOCKET_
 #define _CUTIL_SOCKET_
 
+#include <cutil/AbstractInputStream.h>
+#include <cutil/AbstractOutputStream.h>
+
 #include <cutil/InetException.h>
 #include <cutil/SocketException.h>
 
@@ -37,10 +40,8 @@ namespace cutil
 	 *
 	 * This implementation currently handles PF_INET, IPv4 Internel Protocol communication domain.
 	 *
-	 * @author Colin Law [claw@mail.berlios.de]
-	 * @version $Rev$
 	 */
-	class Socket
+	class Socket : public AbstractInputStream, public AbstractOutputStream
 	{
 		public:
 			//-------------------------------------------------------------------------------//
@@ -145,18 +146,6 @@ namespace cutil
 			int getSocketDescriptor() const ;
 
 			/**
-			 * Checks to see if data is availble for reading on this Socket.
-			 * This method will block for usec micro-seconds, waiting for data
-			 * to become available for reading on this socket, ie a call to read would
-			 * not block.
-			 *
-			 * @param usec the timeout value
-			 * @return true if data is availble for reading upon this socket
-			 *         false otherwise
-			 */
-			bool isAvailable(long usec) const throw(SocketException) ;
-
-			/**
 			 * Returns whether this Socket is connected.
 			 *
 			 * @return true if this Socket is connected, false otherwise
@@ -185,15 +174,6 @@ namespace cutil
 			bool isOutputShutdown() const ;
 
 			/**
-			 * Reads from the socket into the specified std::string, returning the number of bytes read.
-			 * if the number of bytes read is 0, the End-of-File has been reached.
-			 * 
-			 * @param data the string to be written to
-			 * @return the number of bytes read.
-			 */
-			int read(std::string& data) const throw(SocketException) ;
-
-			/**
 			 * Shutdown the Input Stream of this socket.
 			 *
 			 */
@@ -205,24 +185,29 @@ namespace cutil
 			 */
 			void shutdownOutput() throw(SocketException) ;
 
-			/**
-			 * Write the specified string out on the socket
-			 *
-			 * @param data the data to be written to the socket
-			 * @return the number of bytes written
-			 * @throw SocketException if there is an error writing to the socket
-			 */
-			int write(const std::string data) const throw(SocketException) ;
+			//-------------------------------------------------------------------------------//
+			// AbstractInputStream
 
-			/**
-			 * Writes the specified number of bytes of the specified data out on the socket
-			 *
-			 * @param data the data to be written to the socket
-			 * @param size the size of the data
-			 * @return the number of bytes actually written to the socket
-			 * @throw SocketExceotion if there is an error writing to the socket
-			 */
-			int writeData(const void* data, int size) const throw(SocketException) ;
+			virtual bool isDataAvailable(long usec) const throw(Exception) ;
+
+			virtual ssize_t read(void* buf, size_t length) const throw(Exception) ;
+
+			virtual ssize_t read(void* buf, size_t length, int& err_code) const throw() ;
+
+			virtual ssize_t read(char& read_byte) throw(Exception) ;
+
+			virtual ssize_t read(char& read_byte, int& err_code) throw() ;
+
+			//-------------------------------------------------------------------------------//
+			// AbstractOutputStream
+
+			virtual ssize_t write(const void* data, size_t size) throw(Exception) ;
+
+			virtual ssize_t write(const void* data, size_t size, int& err_code) throw() ;
+
+			virtual ssize_t write(const char& write_byte) throw(Exception) ;
+
+			virtual ssize_t write(const char& write_byte, int& err_code) throw() ;
 
 			//-------------------------------------------------------------------------------//
 
@@ -236,11 +221,12 @@ namespace cutil
 			//-------------------------------------------------------------------------------//
 
 		private:
+
 			/**
 			 * Dis-allow Copy constructor
 			 *
 			 */
-			Socket(const Socket& s) {} ;
+			Socket(const Socket&) : AbstractInputStream(), AbstractOutputStream() {} 
 
 			/**
 			 * Creates the Socket file descriptor
@@ -251,19 +237,19 @@ namespace cutil
 			int createSocketFd() throw(SocketException) ;
 
 			/** The socket descriptor */
-			int theSocketDescriptor ;
+			int m_socket_descriptor ;
 
 			/** indicates if this Socket is connected to a remote host */
-			bool theConnectedFlag ;
+			bool m_connected ;
 
 			/** indicates that this socket has been closed */
-			bool theClosedFlag ;
+			bool m_closed ;
 
 			/** indicates that the Input, or read end of this Socket has been shutdown */
-			bool theInputShutdownFlag ;
+			bool m_input_shutdown ;
 
 			/** indicates that the Output, or write end of this Socket has been shutdown */
-			bool theOutputShutdownFlag ;
+			bool m_output_shutdown ;
 
 
 	} ; /* class Socket */

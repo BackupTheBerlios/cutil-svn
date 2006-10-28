@@ -46,11 +46,11 @@ const int Socket::DEFAULT_MAXRECV = 500 ;
  */
 Socket::Socket()
 {
-	theSocketDescriptor = -1 ;
-	theConnectedFlag = false ;
-	theClosedFlag = false ;
-	theInputShutdownFlag = false ;
-	theOutputShutdownFlag = false;
+	m_socket_descriptor = -1 ;
+	m_connected = false ;
+	m_closed = false ;
+	m_input_shutdown = false ;
+	m_output_shutdown = false;
 }
 
 /**
@@ -62,14 +62,14 @@ Socket::Socket()
 Socket::Socket(const InetAddress& host, int port) throw(SocketException)
 {
 	// may throw SocketException
-	theSocketDescriptor = createSocketFd() ;
+	m_socket_descriptor = createSocketFd() ;
 	connect(host, port) ;
 
 	// if no exception were thrown, then set our status flags
-	theConnectedFlag = true ;
-	theClosedFlag = false ;
-	theInputShutdownFlag = false ;
-	theOutputShutdownFlag = false;
+	m_connected = true ;
+	m_closed = false ;
+	m_input_shutdown = false ;
+	m_output_shutdown = false;
 }
 
 /**
@@ -81,7 +81,7 @@ Socket::Socket(const InetAddress& host, int port) throw(SocketException)
 Socket::Socket(const std::string& host, int port) throw(InetException, SocketException)
 {
 	// may throw SocketException
-	theSocketDescriptor = createSocketFd() ;
+	m_socket_descriptor = createSocketFd() ;
 
 	// create an InetAddress fromthe specified host string
 	// may throw InetException
@@ -89,10 +89,10 @@ Socket::Socket(const std::string& host, int port) throw(InetException, SocketExc
 	connect(address, port) ;
 
 	// if no exception were thrown, then set our status flags
-	theConnectedFlag = true ;
-	theClosedFlag = false ;
-	theInputShutdownFlag = false ;
-	theOutputShutdownFlag = false;
+	m_connected = true ;
+	m_closed = false ;
+	m_input_shutdown = false ;
+	m_output_shutdown = false;
 }
 
 /**
@@ -113,15 +113,15 @@ Socket::Socket(int fd) throw(SocketException)
 		// exists, but is it a socket
 		if(S_ISSOCK(statbuf.st_mode))
 		{
-			theSocketDescriptor = fd ;
+			m_socket_descriptor = fd ;
 
 			// @note[todo] need to check that the socket is really connected etc.
-			theConnectedFlag = true ;
+			m_connected = true ;
 		}
 		else
 		{
-			theSocketDescriptor = -1 ;
-			theConnectedFlag = false ;
+			m_socket_descriptor = -1 ;
+			m_connected = false ;
 			throw(SocketException("The specified descriptor is not a socket descriptor")) ;
 		}
 	}
@@ -131,9 +131,9 @@ Socket::Socket(int fd) throw(SocketException)
 	}
 
 
-	theClosedFlag = false ;
-	theInputShutdownFlag = false ;
-	theOutputShutdownFlag = false;
+	m_closed = false ;
+	m_input_shutdown = false ;
+	m_output_shutdown = false;
 }
 
 /**
@@ -142,7 +142,7 @@ Socket::Socket(int fd) throw(SocketException)
  */
 Socket::~Socket()
 {
-	if(theSocketDescriptor != -1)
+	if(m_socket_descriptor != -1)
 	{
 		close() ;
 	}
@@ -160,7 +160,7 @@ Socket::~Socket()
 void
 Socket::connect(const InetAddress& host, int port) throw(SocketException)
 {
-	if(theSocketDescriptor == -1)
+	if(m_socket_descriptor == -1)
 	{
 		throw(SocketException("No valid socket Descriptor")) ;
 	}
@@ -170,7 +170,7 @@ Socket::connect(const InetAddress& host, int port) throw(SocketException)
 	sockAddr.sin_port = htons(port) ;
 	sockAddr.sin_addr = host.getAddress() ;
 
-	int retcode = ::connect(theSocketDescriptor, (sockaddr*)&sockAddr, sizeof(sockAddr)) ;
+	int retcode = ::connect(m_socket_descriptor, (sockaddr*)&sockAddr, sizeof(sockAddr)) ;
 
 	if (retcode == -1)
 	{
@@ -186,10 +186,11 @@ Socket::connect(const InetAddress& host, int port) throw(SocketException)
 void
 Socket::close() throw(SocketException)
 {
-	if(::close(theSocketDescriptor) == 0)
+	if(::close(m_socket_descriptor) == 0)
 	{
-		theSocketDescriptor = -1 ;
-		theClosedFlag = true ;
+		m_socket_descriptor = -1 ;
+		m_closed = true ;
+		m_connected = false ;
 	}
 	else
 	{
@@ -212,7 +213,7 @@ Socket::getInetAddress() const
 	{
 		struct sockaddr_in sockAddr ;
 		socklen_t addrLength = static_cast<socklen_t>(sizeof(sockAddr)) ;
-		if(::getpeername(theSocketDescriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
+		if(::getpeername(m_socket_descriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
 		{
 			std::string err(::strerror(errno)) ;
 			throw(InetException(std::string("Exception in getLocalAddress [getsockname]:").append(err))) ;
@@ -242,7 +243,7 @@ Socket::getPort() const
 		struct sockaddr_in sockAddr ;
 		socklen_t addrLength = static_cast<socklen_t>(sizeof(sockAddr)) ;
 
-		if(::getpeername(theSocketDescriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
+		if(::getpeername(m_socket_descriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
 		{
 			std::string err(::strerror(errno)) ;
 			throw(InetException(std::string("Exception in getPort [getsockname]:").append(err))) ;
@@ -272,7 +273,7 @@ Socket::getLocalAddress() const
 	{
 		struct sockaddr_in sockAddr ;
 		socklen_t addrLength = static_cast<socklen_t>(sizeof(sockAddr)) ;
-		if(::getsockname(theSocketDescriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
+		if(::getsockname(m_socket_descriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
 		{
 			std::string err(::strerror(errno)) ;
 			throw(InetException(std::string("Exception in getLocalAddress [getsockname]:").append(err))) ;
@@ -303,7 +304,7 @@ Socket::getLocalPort() const
 		struct sockaddr_in sockAddr ;
 		socklen_t addrLength = static_cast<socklen_t>(sizeof(sockAddr)) ;
 
-		if(::getsockname(theSocketDescriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
+		if(::getsockname(m_socket_descriptor, reinterpret_cast<struct sockaddr*>(&sockAddr), &addrLength) == -1)
 		{
 			throw(InetException(std::string("Exception in getPort [getsockname]:").append(::strerror(errno)))) ;
 		}
@@ -324,48 +325,7 @@ Socket::getLocalPort() const
 int
 Socket::getSocketDescriptor() const
 {
-	return(theSocketDescriptor) ;
-}
-
-/**
- * Checks to see if data is availble for reading on this Socket.
- * This method will block for usec micro-seconds, waiting for data
- * to become available for reading on this socket, ie a call to read would
- * not block.
- *
- * @param usec the timeout value
- * @return true if data is availble for reading upon this socket
- *         false otherwise
- */
-bool
-Socket::isAvailable(long usec) const throw(SocketException)
-{
-	// read file descriptor set
-	fd_set rfds ;
-	FD_ZERO(&rfds) ;
-
-	FD_SET(theSocketDescriptor, &rfds) ;
-
-	struct timeval t ;
-	t.tv_sec = 0 ;
-	t.tv_usec = usec ;
-
-	int nfds = theSocketDescriptor + 1 ;
-
-	int ret = ::select(nfds, &rfds, reinterpret_cast<fd_set*>(0), reinterpret_cast<fd_set*>(0), &t) ;
-	if(ret == 1)
-	{
-		// we explicitly set only one descriptor so we expect a return of 1
-		return(true) ;
-	}
-	else if(ret == 0)
-	{
-		return(false) ;
-	}
-	else
-	{
-		throw(SocketException(std::string("Exception in isAvailable [select]: ").append(::strerror(errno)))) ;
-	}
+	return(m_socket_descriptor) ;
 }
 
 /**
@@ -376,7 +336,7 @@ Socket::isAvailable(long usec) const throw(SocketException)
 bool
 Socket::isConnected() const
 {
-	return(theConnectedFlag) ;
+	return(m_connected && !m_closed) ;
 }
 
 /**
@@ -387,7 +347,7 @@ Socket::isConnected() const
 bool
 Socket::isClosed() const
 {
-	return(theClosedFlag) ;
+	return(m_closed) ;
 }
 
 /**
@@ -398,7 +358,7 @@ Socket::isClosed() const
 bool
 Socket::isInputShutdown() const
 {
-	return(theInputShutdownFlag) ;
+	return(m_input_shutdown) ;
 }
 
 /**
@@ -409,40 +369,7 @@ Socket::isInputShutdown() const
 bool
 Socket::isOutputShutdown() const
 {
-	return(theOutputShutdownFlag) ;
-}
-
-/**
- * Reads from the socket into the specified std::string, returning the number of bytes read.
- * if the number of bytes read is 0, the End-of-File has been reached.
- * 
- * @param data the string to be written to
- * @return the number of bytes read.
- */
-int
-Socket::read(std::string& data) const throw(SocketException)
-{
-	char buf[Socket::DEFAULT_MAXRECV + 1] ;
-	data = "" ;
-	memset(buf, 0, (Socket::DEFAULT_MAXRECV + 1)) ;
-
-	int retcode = ::recv(theSocketDescriptor, buf, Socket::DEFAULT_MAXRECV, 0) ;
-
-	if(retcode == -1)
-	{
-		throw(SocketException(std::string("Exception in read [recv]: ").append(::strerror(errno)))) ;
-	}
-	else if(retcode == 0)
-	{
-		// End-of-File
-		//throw(EndOfFileException)
-		return(0) ;
-	}
-	else
-	{
-		data = std::string(buf) ;
-		return(retcode) ;
-	}
+	return(m_output_shutdown) ;
 }
 
 /**
@@ -454,7 +381,7 @@ Socket::shutdownInput() throw(SocketException)
 {
 	if(isConnected())
 	{
-		int retcode = ::shutdown(theSocketDescriptor, SHUT_RD) ;
+		int retcode = ::shutdown(m_socket_descriptor, SHUT_RD) ;
 
 		if(retcode == -1)
 		{
@@ -472,7 +399,7 @@ Socket::shutdownOutput() throw(SocketException)
 {
 	if(isConnected())
 	{
-		int retcode = ::shutdown(theSocketDescriptor, SHUT_WR) ;
+		int retcode = ::shutdown(m_socket_descriptor, SHUT_WR) ;
 
 		if(retcode == -1)
 		{
@@ -481,20 +408,73 @@ Socket::shutdownOutput() throw(SocketException)
 	}
 }
 
-/**
- * Write the specified string out on the socket
- *
- * @param data the data to be written to the socket
- * @return the number of bytes written
- * @throw SocketException if there is an error writing to the socket
- */
-int
-Socket::write(const std::string data) const throw(SocketException)
+/*
+void
+Socket::setNonBlocking() throw(SocketException)
 {
-	int retcode = ::send(theSocketDescriptor, data.c_str(), data.size(), MSG_NOSIGNAL) ;
-	if (retcode == -1)
+	int flags = 0 ;
+	flags = fcntl(m_socket_descriptor, F_GETFL, 0) ;
+	flags = flags | O_NONBLOCK ;
+
+	int retcode = fcntl(m_socket_descriptor, F_SETFL, flags) ;
+
+	if(retcode == -1)
 	{
-		throw(SocketException(std::string("Exception in write [send]: ").append(::strerror(errno)))) ;
+		throw(SocketException(std::string("Exception in setNonBlocking [fcntl]: ").append(::strerror(errno)))) ;
+	}
+}
+*/
+
+//-------------------------------------------------------------------------------//
+// AbstractInputStream
+
+bool
+Socket::isDataAvailable(long usec) const throw(Exception)
+{
+	// read file descriptor set
+	fd_set rfds ;
+	FD_ZERO(&rfds) ;
+
+	FD_SET(m_socket_descriptor, &rfds) ;
+
+	struct timeval t ;
+	t.tv_sec = 0 ;
+	t.tv_usec = usec ;
+
+	int nfds = m_socket_descriptor + 1 ;
+
+	int ret = ::select(nfds, &rfds, reinterpret_cast<fd_set*>(0), reinterpret_cast<fd_set*>(0), &t) ;
+	if(ret == 1)
+	{
+		// we explicitly set only one descriptor so we expect a return of 1
+		return(true) ;
+	}
+	else if(ret == 0)
+	{
+		return(false) ;
+	}
+	else
+	{
+		throw(Exception(std::string("Exception in isDataAvailable [select]: ").append(::strerror(errno)))) ;
+	}
+}
+
+ssize_t
+Socket::read(void* buf, size_t length) const throw(Exception)
+{
+	memset(buf, 0, length) ;
+
+	ssize_t retcode = ::recv(m_socket_descriptor, buf, length, 0) ;
+
+	if(retcode == -1)
+	{
+		throw(Exception(std::string("Exception in read [recv]: ").append(::strerror(errno)))) ;
+	}
+	else if(retcode == 0)
+	{
+		// End-of-File
+		//throw(EndOfFileException)
+		return(0) ;
 	}
 	else
 	{
@@ -502,26 +482,71 @@ Socket::write(const std::string data) const throw(SocketException)
 	}
 }
 
-/**
- * Writes the specified number of bytes of the specified data out on the socket
- *
- * @param data the data to be written to the socket
- * @param size the size of the data
- * @return the number of bytes actually written to the socket
- * @throw SocketExceotion if there is an error writing to the socket
- */
-int
-Socket::writeData(const void* data, int size) const throw(SocketException)
+ssize_t
+Socket::read(void* buf, size_t length, int& err_code) const throw()
 {
-	int retcode = ::send(theSocketDescriptor, data, size, MSG_NOSIGNAL) ;
-	if (retcode == -1)
+	ssize_t retcode = ::recv(m_socket_descriptor, buf, length, 0) ;
+
+	if(retcode < 0)
 	{
-		throw(SocketException(std::string("Exception in writeData [send]: ").append(::strerror(errno)))) ;
+		err_code = errno ;
+	}
+
+	return(retcode) ;
+}
+
+ssize_t
+Socket::read(char& read_byte) throw(Exception)
+{
+	return(read(&read_byte, 1)) ;
+}
+
+ssize_t
+Socket::read(char& read_byte, int& err_code) throw()
+{
+	return(read(&read_byte, 1, err_code)) ;
+}
+
+//-------------------------------------------------------------------------------//
+// AbstractOutputStream
+
+ssize_t
+Socket::write(const void* data, size_t size) throw(Exception)
+{
+	ssize_t retcode = ::send(m_socket_descriptor, data, size, MSG_NOSIGNAL) ;
+	if(retcode == -1)
+	{
+		throw(Exception(std::string("Exception in write [send]: ").append(::strerror(errno)))) ;
 	}
 	else
 	{
 		return(retcode) ;
 	}
+}
+
+ssize_t
+Socket::write(const void* data, size_t size, int& err_code) throw()
+{
+	ssize_t retcode = ::send(m_socket_descriptor, data, size, MSG_NOSIGNAL) ;
+
+	if(retcode < 0)
+	{
+		err_code = errno ;
+	}
+
+	return(retcode) ;
+}
+
+ssize_t
+Socket::write(const char& write_byte) throw(Exception)
+{
+	return(write(&write_byte, 1)) ;
+}
+
+ssize_t
+Socket::write(const char& write_byte, int& err_code) throw()
+{
+	return(write(&write_byte, 1, err_code)) ;
 }
 
 //-------------------------------------------------------------------------------//
