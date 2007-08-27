@@ -12,8 +12,10 @@ if XMLPP_SUPPORT
 endif
 
 libcutil_la_SOURCES = \
+	AbstractUnitTest.cc \
 	BitHack.cc \
 	BufferedOutputWriter.cc \
+	ConsoleReporter.cc \
 	Dimension.cc \
 	Exception.cc \
 	FilePath.cc \
@@ -35,6 +37,10 @@ libcutil_la_SOURCES = \
 	StateHandler.cc \
 	StateNode.cc \
 	StringUtilities.cc \
+	TestDriver.cc \
+	TestLog.cc \
+	TestManager.cc \
+	TestResult.cc \
 	${XML_STATE_HANDLER}
 
 libcutil_la_LIBADD = ${XMLPP_LIBS}

@@ -51,7 +51,7 @@ namespace cutil
 			/**
 			 * Calls this Closure.
 			 */
-			virtual T_ret operator() () = 0 ;
+			virtual T_ret operator() () const = 0 ;
 
 		protected:
 			/**
@@ -90,7 +90,7 @@ namespace cutil
 			 * This operator invokes the member function specified within the constructor on the specified
 			 * object
 			 */
-			virtual T_ret operator() () ;
+			virtual T_ret operator() () const ;
 
 		protected:
 
@@ -133,7 +133,7 @@ namespace cutil
 			 * This operator invokes the member function specified within the constructor on the specified
 			 * object, passing the single argument value as a parameter to the member function
 			 */
-			virtual T_ret operator() () ;
+			virtual T_ret operator() () const ;
 
 		protected:
 
@@ -181,7 +181,7 @@ namespace cutil
 			 * This operator invokes the member function specified within the constructor on the specified
 			 * object, passing the single argument value as a parameter to the member function
 			 */
-			virtual T_ret operator() () ;
+			virtual T_ret operator() () const ;
 
 		protected:
 
@@ -234,7 +234,7 @@ namespace cutil
 			 * This operator invokes the member function specified within the constructor on the specified
 			 * object, passing the single argument value as a parameter to the member function
 			 */
-			virtual T_ret operator() () ;
+			virtual T_ret operator() () const ;
 
 		protected:
 
@@ -273,7 +273,7 @@ namespace cutil
 	}
 
 	template <class T_ret, class T_obj>
-	T_ret Closure0<T_ret, T_obj>::operator() ()
+	T_ret Closure0<T_ret, T_obj>::operator() () const 
 	{
 		return((*theObject.*theMemberFunction)()) ;
 	}
@@ -292,7 +292,7 @@ namespace cutil
 	}
 
 	template <class T_ret, class T_obj, class T_arg1>
-	T_ret Closure1<T_ret, T_obj, T_arg1>::operator() ()
+	T_ret Closure1<T_ret, T_obj, T_arg1>::operator() () const 
 	{
 		return((*theObject.*theMemberFunction)(theArg1)) ;
 	}
@@ -311,7 +311,7 @@ namespace cutil
 	}
 
 	template <class T_ret, class T_obj, class T_arg1, class T_arg2>
-	T_ret Closure2<T_ret, T_obj, T_arg1, T_arg2>::operator() ()
+	T_ret Closure2<T_ret, T_obj, T_arg1, T_arg2>::operator() () const 
 	{
 		return((*theObject.*theMemberFunction)(theArg1, theArg2)) ;
 	}
@@ -331,7 +331,7 @@ namespace cutil
 	}
 
 	template <class T_ret, class T_obj, class T_arg1, class T_arg2, class T_arg3>
-	T_ret Closure3<T_ret, T_obj, T_arg1, T_arg2, T_arg3>::operator() ()
+	T_ret Closure3<T_ret, T_obj, T_arg1, T_arg2, T_arg3>::operator() () const 
 	{
 		return((*theObject.*theMemberFunction)(theArg1, theArg2, theArg3)) ;
 	}

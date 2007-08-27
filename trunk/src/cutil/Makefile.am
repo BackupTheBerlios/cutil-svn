@@ -14,9 +14,12 @@ library_include_HEADERS = \
 	AbstractInputStream.h \
 	AbstractOutputStream.h \
 	AbstractShape.h \
+	AbstractUnitTest.h \
+	Assert.h \
 	BitHack.h \
 	BufferedOutputWriter.h \
 	Closure.h \
+	ConsoleReporter.h \
 	Conversion.h \
 	Dimension.h \
 	Enum.h \
@@ -44,6 +47,10 @@ library_include_HEADERS = \
 	StateHandler.h \
 	StateNode.h \
 	StringUtilities.h \
+	TestDriver.h \
+	TestLog.h \
+	TestManager.h \
+	TestResult.h \
 	${XML_STATE_HANDLER}
 
 
