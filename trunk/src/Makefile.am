@@ -3,7 +3,7 @@
 SUBDIRS = cutil
 
 INCLUDES = -I. ${XMLPP_CFLAGS}
-AM_CXXFLAGS = -W -Wall -Werror -ansi -pedantic-errors
+AM_CXXFLAGS = -W -Wall -Werror -ansi
 
 lib_LTLIBRARIES = libcutil.la
 
@@ -12,10 +12,12 @@ if XMLPP_SUPPORT
 endif
 
 libcutil_la_SOURCES = \
+	AbstractTestCase.cc \
 	AbstractUnitTest.cc \
 	BitHack.cc \
 	BufferedOutputWriter.cc \
 	ConsoleReporter.cc \
+	DefaultTestCase.cc \
 	Dimension.cc \
 	Exception.cc \
 	FilePath.cc \

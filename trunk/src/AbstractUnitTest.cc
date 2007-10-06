@@ -31,6 +31,7 @@
 
 using cutil::AbstractUnitTest ;
 using cutil::AbstractClosure ;
+using cutil::AbstractTestCase ;
 using cutil::Exception ;
 using cutil::TestLog ;
 using cutil::TestManager ;
@@ -40,9 +41,25 @@ AbstractUnitTest::~AbstractUnitTest()
 }
 
 AbstractUnitTest::AbstractUnitTest(std::string name, std::string category)
-: m_name(name), m_category(category), m_log(new TestLog())
+	: m_name(name), m_category(category), m_log(new TestLog())
 {
 	TestManager::instance().registerTest(*this) ;
+}
+
+void
+AbstractUnitTest::run()
+{
+	std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases = getTestCases() ;
+	executeTestCases(test_cases) ;
+}
+
+std::vector<cutil::RefCountPtr<AbstractTestCase> >
+AbstractUnitTest::getTestCases()
+{
+	std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases ;
+
+	// copy on return
+	return(test_cases) ;
 }
 
 const std::string&
@@ -64,21 +81,11 @@ AbstractUnitTest::getLog() const
 }
 
 void
-AbstractUnitTest::runTestStep(const AbstractClosure<void>& test_step, std::string step_name, std::string failure_msg)
+AbstractUnitTest::executeTestCases(std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases)
 {
-	try
+	for(std::vector<AbstractTestCase>::size_type i = 0; i < test_cases.size(); i++)
 	{
-		test_step() ;
-		m_log->addTestResult(TestResult(step_name, TestResult::PASSED_ENUM)) ;
-	}
-	catch(Exception& e)
-	{
-		std::string msg = failure_msg + " : Caught Exception : " + e.toString() ;
-		m_log->addTestResult(TestResult(step_name, TestResult::FAILED_ENUM, failure_msg)) ;
-	}
-	catch(...)
-	{
-		std::string msg = failure_msg + " : Caught Unknown Exception" ;
-		m_log->addTestResult(TestResult(step_name, TestResult::FAILED_ENUM, failure_msg)) ;
+		cutil::RefCountPtr<AbstractTestCase> test_case = test_cases[i] ;
+		test_case->run(*m_log) ;
 	}
 }

@@ -205,7 +205,7 @@ namespace cutil
 					/**
 					 * Disallow copy constructor
 					 */
-					ChildHandleManager(const ChildHandleManager& noCopy) {} ;
+					ChildHandleManager(const ChildHandleManager&) {} ;
 
 					/** contained handles typedef */
 					typedef std::map<std::string, RefCountPtr<StateNode> > ChildHandleContainer ;

@@ -191,7 +191,7 @@ namespace cutil
 			/**
 			 * Dis-allow Copy constructor
 			 */
-			ServerSocket(const ServerSocket& ss) {} ;
+			ServerSocket(const ServerSocket&) {} ;
 
 			/**
 			 * Creates the ServerSocket file descriptor

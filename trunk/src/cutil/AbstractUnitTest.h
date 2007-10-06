@@ -23,11 +23,14 @@
 #ifndef _CUTIL_ABSTRACTUNITTEST_H_
 #define _CUTIL_ABSTRACTUNITTEST_H_
 
+#include <cutil/AbstractTestCase.h>
+#include <cutil/DefaultTestCase.h>
 #include <cutil/Closure.h>
+#include <cutil/RefCountPtr.h>
 
 #include <memory>
-#include <list>
 #include <string>
+#include <vector>
 
 namespace cutil
 {
@@ -35,15 +38,20 @@ namespace cutil
 
 	/**
 	 * AbstractUnitTest provides a base class for unit tests.
-	 * Unit tests instances should derive from this abstract base, providing a implementation
-	 * of the run method to perform the actual tests. Tests should log results, pass or fail to
-	 * the test log, which can later be queried to determine the status of the test run.
+	 * Unit tests instances should derive from this abstract base to perform the actual tests.
 	 *
-	 * Typically, a unit test implementation will will run a series of individual tests or steps for
-	 * a particular unit. The runTestStep helper method can be used to automatically run each of these
-	 * step, wrapping the test method within a try/catch block and logging as appropriate for the
-	 * results of the test. In this setup, a failing test will typically throw an exception, which
-	 * will be caught and logged to the test log.
+	 * AbstractUnitTest supports two ways of implementing a unit test. An implementation may
+	 * either re-implementation the run method, the getTestCases or both.
+	 *
+	 * By re-implementing run, a unit test can be in complete control of the test, performing
+	 * any test action as required. Re-implementing getTestCases allow a unit test to define a
+	 * list of test steps to be run which may be executed by the run method (which is its
+	 * default implementation) or treated specifically within the overriden run method. 
+	 * Providing test cases allows a test to wrap up each test step performing any failure
+	 * and exception handling and logging as required.
+	 *
+	 * Tests should log results, pass or fail to the test log, which can later be queried to
+	 * determine the status of the test run.
 	 *
 	 */
 	class AbstractUnitTest
@@ -57,10 +65,25 @@ namespace cutil
 
 			/**
 			 * Invoked by a test runner to perform the test.
-			 * Subclasses must implement this method to perform some useful testing.
+			 * This implementation invokes each test case returned by getTestCases.
+			 *
+			 * If a unit test implementation is interested in providing a list of test cases only,
+			 * this implementation should suffice, otherwise implementations should override this
+			 * method to perform appropriate testing.
 			 *
 			 */
-			virtual void run() = 0;
+			virtual void run() ;
+			
+			/**
+			 * Returns the collection of AbstractTestCase exposed by this AbstractUnitTest.
+			 * This default implementation returns an empty collection
+			 *
+			 * Unit test implementation should override this method if they wish to return a
+			 * list of AbstractTestCase to be run.
+			 *
+			 * @return default implementation returns an empty collection.
+			 */
+			virtual std::vector<cutil::RefCountPtr<AbstractTestCase> > getTestCases() ;
 
 			/**
 			 * Gets the nams of this test
@@ -94,16 +117,24 @@ namespace cutil
 			AbstractUnitTest(std::string name, std::string category) ;
 
 			/**
-			 * Helper method to run a test step, wrapped as an AbstractClosure<void>, automatically
-			 * wrapping the invocation of the AbstractClosure<void> in a try/catch block. If an exception is thrown
-			 * during the invocations of the AbstractClosure<void>, the step is deemed to have failed and
-			 * a failure will be logged the the test log.
+			 * Executes each AbstractTestCase specified within test_cases
 			 *
-			 * @param test_step AbstractClosure<void> representing an action to be executed within a try/catch block
-			 * @param step_name name of the step which will be written to the test log on success or failure
-			 * @param failure_msg message written to the test log if the test step throws an exception.
+			 * @param test_cases list of AbstractTestCases to be run.
 			 */
-			void runTestStep(const AbstractClosure<void>& test_step, std::string step_name = "", std::string failure_msg = "") ;
+			void executeTestCases( std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases) ;
+
+			/**
+			 * Helper method to construct an AbstractTestCase
+			 *
+			 * @param obj unit test instance on which testMethod is to be called.
+			 * @param testMethod function pointer to the test method to be called upon obj
+			 * @param step_name user visible name of the test step
+			 * @param pass_msg user visible message written to the test log if the test step passes
+			 * @param fail_msg user visible message writtin to the test log if the test fails.
+			 */
+			template<class T>
+			cutil::RefCountPtr<cutil::AbstractTestCase>
+			makeTestCase(T* obj, void (T::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg) ;
 
 		private:
 			/** name of this test */
@@ -116,6 +147,18 @@ namespace cutil
 			std::auto_ptr<TestLog> m_log ;
 
 	} ; /* class AbstractUnitTest */
+
+
+	// template implementation
+
+	template<class T>
+	cutil::RefCountPtr<cutil::AbstractTestCase>
+	AbstractUnitTest::makeTestCase(T* obj, void (T::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg)
+	{
+		cutil::RefCountPtr<const cutil::AbstractClosure<void> > test_step(new cutil::Closure0<void, T>(obj, testMethod)) ;
+		cutil::RefCountPtr<cutil::AbstractTestCase> test_case(new cutil::DefaultTestCase(test_step, step_name, pass_msg, fail_msg)) ;
+		return(test_case) ;
+	}
 
 } /* namespace cutil */
 

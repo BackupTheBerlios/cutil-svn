@@ -595,7 +595,7 @@ namespace cutil
 			/**
 			 * Disallow copy constructor
 			 */
-			PluginManager(const PluginManager& pm) { }
+			PluginManager(const PluginManager&) { }
 
 			//-------------------------------------------------------------------------------//
 

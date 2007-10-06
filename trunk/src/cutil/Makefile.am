@@ -14,6 +14,7 @@ library_include_HEADERS = \
 	AbstractInputStream.h \
 	AbstractOutputStream.h \
 	AbstractShape.h \
+	AbstractTestCase.h \
 	AbstractUnitTest.h \
 	Assert.h \
 	BitHack.h \
@@ -21,6 +22,7 @@ library_include_HEADERS = \
 	Closure.h \
 	ConsoleReporter.h \
 	Conversion.h \
+	DefaultTestCase.h \
 	Dimension.h \
 	Enum.h \
 	Exception.h \

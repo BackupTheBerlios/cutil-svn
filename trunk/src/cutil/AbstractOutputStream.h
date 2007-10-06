@@ -102,7 +102,7 @@ namespace cutil
 			 * Dis-allow Copy constructor
 			 *
 			 */
-			AbstractOutputStream(const AbstractOutputStream& s) {} ;
+			AbstractOutputStream(const AbstractOutputStream&) {} ;
 
 	} ; /* class AbstractOutputStream */
 

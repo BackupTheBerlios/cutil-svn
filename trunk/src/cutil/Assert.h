@@ -49,6 +49,22 @@ namespace cutil
 			template <class T>
 			static void areEqual(T expected, T actual, std::string message = std::string("")) ;
 
+			/**
+			 * Determines if actual is true, throwning a cutil::Exception if actual is not true
+			 *
+			 * @param actual the value to test
+			 * @param message string to log describing test failure.
+			 */
+			static void isTrue(bool actual, std::string message = std::string("")) ;
+			
+			/**
+			 * Determines if actual is false, throwning a cutil::Exception if actual is not false
+			 *
+			 * @param actual the value to test
+			 * @param message string to log describing test failure.
+			 */
+			static void isFalse(bool actual, std::string message = std::string("")) ;
+
 		private:
 			/**
 			 * private constructor to avoid instances of this static class
@@ -74,6 +90,34 @@ namespace cutil
 			throw(Exception(buf.str())) ;
 		}
 	}
+	
+	void Assert::isTrue(bool actual, std::string message)
+	{
+		if(actual != true)
+		{
+			std::ostringstream buf ;
+			buf << "Assertation Failed (isTrue): " ;
+			buf << message ;
+			buf << " [actual=" << actual << "]" ;
+
+			throw(Exception(buf.str())) ;
+		}
+	}
+	
+	void Assert::isFalse(bool actual, std::string message)
+	{
+		if(actual != false)
+		{
+			std::ostringstream buf ;
+			buf << "Assertation Failed (isFalse): " ;
+			buf << message ;
+			buf << " [actual=" << actual << "]" ;
+
+			throw(Exception(buf.str())) ;
+		}
+	}
+	
+	
 
 } /* namespace cutil */
 

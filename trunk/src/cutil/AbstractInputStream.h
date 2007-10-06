@@ -117,7 +117,7 @@ namespace cutil
 			 * Dis-allow Copy constructor
 			 *
 			 */
-			AbstractInputStream(const AbstractInputStream& s) {} ;
+			AbstractInputStream(const AbstractInputStream&) {} ;
 
 	} ; /* class AbstractInputStream */
 
