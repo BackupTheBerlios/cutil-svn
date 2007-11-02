@@ -80,6 +80,12 @@ AbstractUnitTest::getLog() const
 	return(*m_log) ;
 }
 
+TestLog&
+AbstractUnitTest::getLog()
+{
+	return(*m_log) ;
+}
+
 void
 AbstractUnitTest::executeTestCases(std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases)
 {

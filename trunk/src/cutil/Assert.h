@@ -44,26 +44,86 @@ namespace cutil
 			 *
 			 * @param expected the expected value
 			 * @param actual the value to be checked
-			 * @param message string to log describing test failure.
+			 * @param message string added to the exception message
 			 */
 			template <class T>
 			static void areEqual(T expected, T actual, std::string message = std::string("")) ;
 
 			/**
-			 * Determines if actual is true, throwning a cutil::Exception if actual is not true
+			 * Determines if actual is true, throwing a cutil::Exception if actual is not true
 			 *
 			 * @param actual the value to test
-			 * @param message string to log describing test failure.
+			 * @param message string added to the exception message
 			 */
-			static void isTrue(bool actual, std::string message = std::string("")) ;
-			
+			static void isTrue(bool actual, std::string message = std::string(""))
+			{
+				if(actual != true)
+				{
+					std::ostringstream buf ;
+					buf << "Assertation Failed (isTrue): " ;
+					buf << message ;
+					buf << " [actual=" << actual << "]" ;
+
+					throw(Exception(buf.str())) ;
+				}
+			}
+
 			/**
-			 * Determines if actual is false, throwning a cutil::Exception if actual is not false
+			 * Determines if actual is false, throwing a cutil::Exception if actual is not false
 			 *
 			 * @param actual the value to test
-			 * @param message string to log describing test failure.
+			 * @param message string added to the exception message
 			 */
-			static void isFalse(bool actual, std::string message = std::string("")) ;
+			static void isFalse(bool actual, std::string message = std::string(""))
+			{
+				if(actual != false)
+				{
+					std::ostringstream buf ;
+					buf << "Assertation Failed (isFalse): " ;
+					buf << message ;
+					buf << " [actual=" << actual << "]" ;
+
+					throw(Exception(buf.str())) ;
+				}
+			}
+
+			/**
+			 * Determines if the specified pointer is a null pointer, i.e. 0.
+			 *
+			 * @param ptr pointer to test
+			 * @param message string added to the exception message
+			 */
+			static void isNull(void* ptr, std::string message = std::string(""))
+			{
+				if(ptr != 0)
+				{
+					throw(Exception(std::string("Assertation Failed (isNull): ") + message)) ;
+				}
+			}
+
+			/**
+			 * Determines if the specified pointer is not a null pointer, i.e. not 0.
+			 *
+			 * @param ptr pointer to test
+			 * @param message string added to the exception message
+			 */
+			static void isNotNull(void* ptr, std::string message = std::string(""))
+			{
+				if(ptr == 0)
+				{
+					throw(Exception(std::string("Assertation Failed (isNotNull): ") + message)) ;
+				}
+			}
+
+			/**
+			 *  throws cutil::Exception with the specified message string
+			 *
+			 * @param message string added to the exception message
+			 */
+			static void fail(std::string message = std::string(""))
+			{
+				throw(Exception(message)) ;
+			}
 
 		private:
 			/**
@@ -90,34 +150,6 @@ namespace cutil
 			throw(Exception(buf.str())) ;
 		}
 	}
-	
-	void Assert::isTrue(bool actual, std::string message)
-	{
-		if(actual != true)
-		{
-			std::ostringstream buf ;
-			buf << "Assertation Failed (isTrue): " ;
-			buf << message ;
-			buf << " [actual=" << actual << "]" ;
-
-			throw(Exception(buf.str())) ;
-		}
-	}
-	
-	void Assert::isFalse(bool actual, std::string message)
-	{
-		if(actual != false)
-		{
-			std::ostringstream buf ;
-			buf << "Assertation Failed (isFalse): " ;
-			buf << message ;
-			buf << " [actual=" << actual << "]" ;
-
-			throw(Exception(buf.str())) ;
-		}
-	}
-	
-	
 
 } /* namespace cutil */
 

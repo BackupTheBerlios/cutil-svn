@@ -1,137 +1,267 @@
-#include <cutil/RefCountPtr.h>
-#include <iostream>
+/*
+ * Copyright (C) 2007  Colin Law
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * @author Colin Law [claw@mail.berlios.de]
+ *
+ * $Id$
+ */
+
+#include "RefCountPtrTest.h"
+
+#include <cutil/DefaultTestCase.h>
+#include <cutil/Assert.h>
 #include <list>
+#include <memory>
 #include <string>
-#include <sstream>
 
-using cutil::RefCountPtr ;
+using namespace cutil::unit_tests ;
 
-// dummy class to output when it is created and destroyed
-class foo
+class ConstructionLog
 {
 	public:
-		foo() { std::cout << "[foo] constructor " << i << std::endl ; m_i = i++ ;} ;
-		~foo() {  std::cout << "[foo] deconstructor" << m_i << std::endl ; } ;
-		std::string bar() { std::ostringstream s ; s << "[foo] bar " << m_i ; return(s.str()) ; } ;
+		ConstructionLog()
+		: m_constructor_count(0), m_destructor_count(0)
+		{
+		}
+				
+		void consructorCalled()
+		{         
+			m_constructor_count++ ;
+		}
+		
+		void destructorCalled()
+		{
+			m_destructor_count++ ;
+		}
+		
+		int getConstructorCount() const
+		{
+			return m_constructor_count ;
+		}
+		
+		int getDestructorCount() const
+		{
+			return m_destructor_count ;
+		}
+		
 	private:
-		int m_i ;
-		static int i ;
+		int m_constructor_count ;
+		int m_destructor_count ;
 } ;
-int foo::i = 0 ;
 
-
-int main()
+class Foo
 {
-	// Construction
-	std::cout << "### Construction ###" << std::endl ;
-	RefCountPtr<foo> ptr_a(new foo()) ;
-	std::cout << ptr_a->bar() << std::endl ;
+	public:
+		Foo(ConstructionLog& log)
+		: m_log(log)
+		{
+			m_log.consructorCalled() ;
+		}
+		
+		~Foo()
+		{
+			m_log.destructorCalled() ;
+		}
 
-	// reference counting
-	std::cout << "### Reference counting ###" << std::endl ;
-	std::cout << "  ptr_a (" << ptr_a->bar() << ") count " << ptr_a.getRefCount() << std::endl ;
+	private:
+		ConstructionLog& m_log ;
+} ;
+			
 
-	// copy constructor
-	RefCountPtr<foo> ptr_b(ptr_a) ;
-	std::cout << "  ptr_b (" << ptr_b->bar() << ") count " << ptr_b.getRefCount() << std::endl ;
+RefCountPtrTest::RefCountPtrTest() : cutil::AbstractUnitTest("RefCountPtr Test", "cutil")
+{}
 
-	// assignment
-	RefCountPtr<foo> ptr_c ;
-	ptr_c = ptr_a ;
-	std::cout << "  ptr_c (" << ptr_c->bar() << ") count " << ptr_c.getRefCount() << std::endl ;
+std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> >
+RefCountPtrTest::getTestCases()
+{
+	std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > test_cases ;
 
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::pointsToNullOnConstruction, "pointsToNullOnConstruction", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::refCountIncreasesWhenAssigned, "refCountIncreasesWhenAssigned", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::refCountIncreasesWhenCopyConstructorCalled, "refCountIncreasesWhenCopyConstructorCalled", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::refCountDecreasesWhenOutOfScope, "refCountDecreasesWhenOutOfScope", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::assignmentPointsToSameInstance, "assignmentPointsToSameInstance", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::destructorCalledWhenLastReferenceCleared, "destructorCalledWhenLastReferenceCleared", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::destructorCalledWhenLastReferenceFallsOutOfScope, "destructorCalledWhenLastReferenceFallsOutOfScope", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::copyConstructorPointsToSameInstance, "copyConstructorPointsToSameInstance", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::canBeCleared, "canBeCleared", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::canBindNewPointer, "canBindNewPointer", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::canCompareForEquality, "canCompareForEquality", "", ""));
+	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::canBePlacedInStlContainer, "canBePlacedInStlContainer", "", ""));
+	
+	// copy on return
+	return(test_cases) ;
+}
 
+void
+RefCountPtrTest::pointsToNullOnConstruction()
+{
+	cutil::RefCountPtr<int> ptr ;
+	Assert::isFalse(ptr.hasPtr()) ;
+	Assert::isNull(ptr.getPtr()) ;
+	Assert::areEqual<unsigned int>(0, ptr.getRefCount()) ;
+}
 
-	// clear
-	std::cout << "\n### Clear reference ###" << std::endl ;
-	ptr_b.clear() ;
-	if(ptr_a.hasPtr())
+void
+RefCountPtrTest::refCountIncreasesWhenAssigned()
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	Assert::areEqual<unsigned int>(1, ptr_a.getRefCount()) ;
+
+	cutil::RefCountPtr<int> ptr_b = ptr_a ;
+	Assert::areEqual<unsigned int>(2, ptr_a.getRefCount()) ;
+	Assert::areEqual<unsigned int>(2, ptr_b.getRefCount()) ;
+}
+
+void
+RefCountPtrTest::refCountIncreasesWhenCopyConstructorCalled()
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	Assert::areEqual<unsigned int>(1, ptr_a.getRefCount()) ;
+
+	cutil::RefCountPtr<int> ptr_b(ptr_a) ;
+	Assert::areEqual<unsigned int>(2, ptr_a.getRefCount()) ;
+	Assert::areEqual<unsigned int>(2, ptr_b.getRefCount()) ;
+}
+
+void
+RefCountPtrTest::refCountDecreasesWhenOutOfScope()
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	Assert::areEqual<unsigned int>(1, ptr_a.getRefCount()) ;
+
 	{
-		std::cout << "  ptr_a (" << ptr_a->bar() << ") count " << ptr_a.getRefCount() << std::endl ;
+		cutil::RefCountPtr<int> ptr_b = ptr_a ;
+		Assert::areEqual<unsigned int>(2, ptr_a.getRefCount()) ;
 	}
-	else
+	
+	Assert::areEqual<unsigned int>(1, ptr_a.getRefCount()) ;
+}
+
+void
+RefCountPtrTest::destructorCalledWhenLastReferenceCleared()
+{
+	ConstructionLog log ;
+	cutil::RefCountPtr<Foo> ptr(new Foo(log)) ;
+	Assert::areEqual<unsigned int>(1, ptr.getRefCount()) ;
+
+	Assert::areEqual<int>(0, log.getDestructorCount()) ;
+	ptr.clear() ;
+	Assert::areEqual<int>(1, log.getDestructorCount()) ;
+}
+
+void
+RefCountPtrTest::destructorCalledWhenLastReferenceFallsOutOfScope()
+{
+	ConstructionLog log ;
 	{
-		std::cout << "  ptr_a has no pointer" << std::endl ;
+		cutil::RefCountPtr<Foo> ptr(new Foo(log)) ;
+		Assert::areEqual<unsigned int>(1, ptr.getRefCount()) ;
+
+		Assert::areEqual<int>(0, log.getDestructorCount()) ;
 	}
+	Assert::areEqual<int>(1, log.getDestructorCount()) ;
+}
 
-	if(ptr_b.hasPtr())
-	{
-		std::cout << "  ptr_b (" << ptr_b->bar() << ") count " << ptr_b.getRefCount() << std::endl ;
-	}
-	else
-	{
-		std::cout << "  ptr_b has no pointer" << std::endl ;
-	}
+void
+RefCountPtrTest::assignmentPointsToSameInstance() 
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	cutil::RefCountPtr<int> ptr_b = ptr_a ;
+	Assert::areEqual<int*>(ptr_a.getPtr(), ptr_b.getPtr()) ;
+}
 
-	if(ptr_c.hasPtr())
-	{
-		std::cout << "  ptr_c (" << ptr_c->bar() << ") count " << ptr_c.getRefCount() << std::endl ;
-	}
-	else
-	{
-		std::cout << "  ptr_c has no pointer" << std::endl ;
-	}
+void
+RefCountPtrTest::copyConstructorPointsToSameInstance()
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	cutil::RefCountPtr<int> ptr_b(ptr_a) ;
+	Assert::areEqual<int*>(ptr_a.getPtr(), ptr_b.getPtr()) ;
+}
 
+void
+RefCountPtrTest::canBeCleared() 
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	cutil::RefCountPtr<int> ptr_b = ptr_a ;
 
+	Assert::areEqual<unsigned int>(2, ptr_a.getRefCount()) ;
+	ptr_a.clear() ;
 
+	Assert::isFalse(ptr_a.hasPtr()) ;
+	Assert::isNull(ptr_a.getPtr()) ;
+	Assert::areEqual<unsigned int>(0, ptr_a.getRefCount()) ;
 
-	// bind
-	std::cout << "\n### bind reference ###" << std::endl ;
-	foo* fb = new foo() ;
-	ptr_b.bind(fb) ;
-	std::cout << "  ptr_a (" << ptr_a->bar() << ") count " << ptr_a.getRefCount() << std::endl ;
-	std::cout << "  ptr_b (" << ptr_b->bar() << ") count " << ptr_b.getRefCount() << std::endl ;
-	std::cout << "  ptr_c (" << ptr_c->bar() << ") count " << ptr_c.getRefCount() << std::endl ;
+	Assert::isTrue(ptr_b.hasPtr()) ;
+	Assert::isNotNull(ptr_b.getPtr()) ;
+	Assert::areEqual<unsigned int>(1, ptr_b.getRefCount()) ;
+}
 
+void
+RefCountPtrTest::canBindNewPointer()
+{
+	ConstructionLog log_a ;
+	ConstructionLog log_b ;
+	cutil::RefCountPtr<Foo> ptr(new Foo(log_a)) ;
+	Assert::areEqual<int>(0, log_a.getDestructorCount()) ;
+	
+	ptr.bind(new Foo(log_b)) ;
+	Assert::areEqual<int>(1, log_a.getDestructorCount()) ;
+	Assert::areEqual<int>(1, ptr.getRefCount()) ;
+}
 
+void
+RefCountPtrTest::canCompareForEquality() 
+{
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	cutil::RefCountPtr<int> ptr_b = ptr_a ;
+	Assert::isTrue(ptr_a == ptr_b) ;
+}
 
-	// equality
-	std::cout << "\n### equality ###" << std::endl ;
-	std::cout << "  ptr_a == ptr_b : " << (ptr_a == ptr_b) << std::endl ;
-	std::cout << "  ptr_a == ptr_c : " << (ptr_a == ptr_c) << std::endl ;
-	std::cout << "  ptr_b == ptr_c : " << (ptr_b == ptr_c) << std::endl ;
+void
+RefCountPtrTest::canBePlacedInStlContainer()
+{
+	std::list<cutil::RefCountPtr<int> > container ;
 
+	cutil::RefCountPtr<int> ptr_a(new int(42)) ;
+	Assert::areEqual<unsigned int>(1, ptr_a.getRefCount()) ;
 
-	// falling out of scope
-	std::cout << "\n### scoping ###" << std::endl ;
+	// place into container 5 times, expect ref count to increase by 5
 	for(int i = 0; i < 5; i++)
 	{
-		// create a new RefCountPtr and foo, then simply fall out of scope
-		// foo should be cleaned up automatically
-		RefCountPtr<foo> rcp(new foo()) ;
-		std::cout << "  rcp (" << rcp->bar() << ") count " << rcp.getRefCount() << std::endl ;
+		container.push_back(ptr_a) ;
 	}
-
-
-
-	std::cout << "\n### STL Container ###" << std::endl ;
-	std::list<RefCountPtr<foo> > l ;
-
-	RefCountPtr<foo> conttest(new foo()) ;
-	std::cout << "  conttest (" << conttest->bar() << ") count " << conttest.getRefCount() << std::endl ;
-
-	for(int i = 0; i < 5; i++)
+	Assert::areEqual<unsigned int>(6, ptr_a.getRefCount()) ;
+	
+	// all items point to the same instance
+	for(std::list<cutil::RefCountPtr<int> >::const_iterator citer = container.begin(); citer != container.end(); ++citer)
 	{
-		// adding to the container copies the object
-		l.push_back(conttest) ;
-		std::cout << "  container size = " << l.size() << " ref count(" << l.back()->bar() << ") = " << l.back().getRefCount() << std::endl ;
+		Assert::isTrue(ptr_a == *citer) ;
 	}
 
-	// clear original reference
-	conttest.clear() ;
-	std::cout << "  container references (" << l.front()->bar() << ") count " << l.front().getRefCount() << std::endl ;
+	// clear the original ptr, expect ref count to be 0
+	ptr_a.clear() ;
+	Assert::areEqual<unsigned int>(0, ptr_a.getRefCount()) ;
+	
+	// create new ptr from item in container, expect ref count to increase by 1
+	cutil::RefCountPtr<int> ptr_b(container.back()) ;
+	Assert::areEqual<unsigned int>(6, ptr_b.getRefCount()) ;
 
-	RefCountPtr<foo> outOfContainer(l.back()) ;
-	std::cout << "  outOfContainer (" << outOfContainer->bar() << ") count " << outOfContainer.getRefCount() << std::endl ;
-
-	// clear the container
-	l.clear() ;
-	std::cout << "  Clearing container" << std::endl ;
-	std::cout << "  outOfContainer (" << outOfContainer->bar() << ") count " << outOfContainer.getRefCount() << std::endl ;
-
-
-	std::cout << "\n### End ###" << std::endl ;
-	std::cout << "  remaining RefCountPtr sill fall out of scope and be cleaned up automatically :-) " << std::endl ;
-
-	return(0) ;
+	// clear the container, expect to be left with the single ref.
+	container.clear() ;
+	Assert::areEqual<unsigned int>(1, ptr_b.getRefCount()) ;
 }

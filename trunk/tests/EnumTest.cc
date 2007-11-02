@@ -1,50 +1,118 @@
-#include <cutil/Enum.h>
+/*
+ * Copyright (C) 2007  Colin Law
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * @author Colin Law [claw@mail.berlios.de]
+ *
+ * $Id$
+ */
 
-#include <iostream>
+#include "EnumTest.h"
+
+#include <cutil/Assert.h>
+#include <cutil/DefaultTestCase.h>
+#include <cutil/Enum.h>
 #include <string>
 
-using cutil::Enum ;
+using namespace cutil::unit_tests ;
 
-class Foo : public cutil::Enum<Foo>
+class FooEnum : public cutil::Enum<FooEnum>
 {
 	public:
-		static const Foo TEST1 ;
-		static const Foo TEST2 ;
+		static const FooEnum ENUM_A ;
+		static const FooEnum ENUM_B ;
+		static const FooEnum ENUM_C ;
 
-		~Foo() {} ;
+		~FooEnum() {} ;
 	private:
-		Foo(std::string description) : cutil::Enum<Foo>(description) {} ;
+		FooEnum(std::string description) : cutil::Enum<FooEnum>(description) {} ;
 } ;
 
-template cutil::Enum<Foo>::EnumInstanceList cutil::Enum<Foo>::theEnumInstances ;
-template<> int cutil::Enum<Foo>::theNextValue = 0 ;
+template cutil::Enum<FooEnum>::EnumInstanceList cutil::Enum<FooEnum>::theEnumInstances ;
+template<> int cutil::Enum<FooEnum>::theNextValue = 0 ;
 
-const Foo Foo::TEST1("Test Enum 1") ;
-const Foo Foo::TEST2("Test Enum 2") ;
+std::string expected_descriptions[] = { "Enum A", "Enum B", "Enum C" } ;
 
-int main()
+const FooEnum FooEnum::ENUM_A(expected_descriptions[0]) ;
+const FooEnum FooEnum::ENUM_B(expected_descriptions[1]) ;
+const FooEnum FooEnum::ENUM_C(expected_descriptions[2]) ;
+
+EnumTest::EnumTest() : cutil::AbstractUnitTest("Enum Test", "cutil")
+{}
+
+std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> >
+EnumTest::getTestCases()
 {
-	// Construction
-	std::cout << "### Construction ###" << std::endl ;
+	std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > test_cases ;
 
-	std::cout << Foo::TEST1.getDescription() << std::endl ;
-	
-	for(Foo::const_iterator citer = Foo::begin(); citer != Foo::end(); ++citer)
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canIterateOverEnum, "canIterateOverEnum", "", ""));
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canGetFirst, "canGetFirst", "", ""));
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canGetLast, "canGetLast", "", ""));
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canGetValue, "canGetValue", "", ""));
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canGetByValue, "canGetByValue", "", ""));
+	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::hasValue, "hasValue", "", ""));
+
+	// copy on return
+	return(test_cases) ;
+}
+
+
+void
+EnumTest::canIterateOverEnum()
+{
+	int count = 0;
+	for(FooEnum::const_iterator citer = FooEnum::begin(); citer != FooEnum::end(); ++citer)
 	{
-		const Foo* foo = *citer ;
-		std::cout << foo->getDescription() << std::endl ;
-	}
-	
-	std::cout << "--------------" << std::endl ;
-	std::cout << Foo::getFirst()->getDescription() << std::endl ;
-	std::cout << Foo::getLast()->getDescription() << std::endl ;
-	
-	std::cout << "--------------" << std::endl ;
-	std::cout << Foo::getFirst()->getValue() << std::endl ;
-	std::cout << Foo::getLast()->getValue() << std::endl ;
-	
-	std::cout << "--------------" << std::endl ;
-	std::cout << Foo::getByValue(0)->getDescription() << std::endl ;
+		const FooEnum* foo = *citer ;
+		Assert::areEqual<std::string>(expected_descriptions[count], foo->getDescription()) ;
 
-	return(0) ;
+		count++ ;
+	}
+}
+
+void
+EnumTest::canGetFirst()
+{
+	Assert::areEqual<std::string>(expected_descriptions[0], FooEnum::getFirst()->getDescription()) ;
+}
+
+void
+EnumTest::canGetLast()
+{
+	Assert::areEqual<std::string>(expected_descriptions[2], FooEnum::getLast()->getDescription()) ;
+}
+
+void
+EnumTest::canGetValue()
+{
+	Assert::areEqual<int>(0, FooEnum::getFirst()->getValue()) ;
+	Assert::areEqual<int>(2, FooEnum::getLast()->getValue()) ;
+}
+
+void
+EnumTest::canGetByValue()
+{
+	Assert::areEqual<std::string>(expected_descriptions[0], FooEnum::getByValue(0)->getDescription()) ;
+	Assert::areEqual<std::string>(expected_descriptions[1], FooEnum::getByValue(1)->getDescription()) ;
+	Assert::areEqual<std::string>(expected_descriptions[2], FooEnum::getByValue(2)->getDescription()) ;
+}
+
+void
+EnumTest::hasValue()
+{
+	Assert::isTrue(FooEnum::hasValue(0)) ;
+	Assert::isFalse(FooEnum::hasValue(10)) ;
 }

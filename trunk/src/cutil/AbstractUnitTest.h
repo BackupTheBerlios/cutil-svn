@@ -100,11 +100,18 @@ namespace cutil
 			const std::string& getCategory() const ;
 
 			/**
-			 * Provides access to the log of events recorded by this test.
+			 * Provides readonly access to the log of events recorded by this test.
 			 *
 			 * @return this tests log.
 			 */
 			const TestLog& getLog() const ;
+			
+			/**
+			 * Provides read/write access to the log of events recorded by this test.
+			 *
+			 * @return this tests log.
+			 */
+			TestLog& getLog() ;
 
 		protected:
 			/**

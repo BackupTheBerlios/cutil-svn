@@ -1,12 +1,11 @@
-noinst_PROGRAMS = RefPtrTest EnumTest MapIterTest
+noinst_PROGRAMS = UnitTests
 
 AM_CXXFLAGS = -I../src/
 
-RefPtrTest_SOURCES = RefCountPtrTest.cc
-RefPtrTest_LDADD = ../src/libcutil.la
+UnitTests_SOURCES = \
+	UnitTests.cc \
+	RefCountPtrTest.cc \
+	EnumTest.cc \
+	MapIteratorTest.cc
 
-EnumTest_SOURCES = EnumTest.cc
-EnumTest_LDADD = ../src/libcutil.la
-
-MapIterTest_SOURCES = MapIterTest.cc
-MapIterTest_LDADD = ../src/libcutil.la
+UnitTests_LDADD = ../src/libcutil.la
