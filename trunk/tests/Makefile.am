@@ -6,6 +6,7 @@ UnitTests_SOURCES = \
 	UnitTests.cc \
 	RefCountPtrTest.cc \
 	EnumTest.cc \
-	MapIteratorTest.cc
+	MapIteratorTest.cc \
+	NullableTest.cc
 
 UnitTests_LDADD = ../src/libcutil.la
