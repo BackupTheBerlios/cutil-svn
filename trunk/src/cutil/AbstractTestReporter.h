@@ -51,14 +51,21 @@ namespace cutil
 			 * @param category category of the test started
 			 * @param name the name of the test stated.
 			 */
-			virtual void TestStarted(const std::string& category, const std::string& name) = 0 ;
+			virtual void testStarted(const std::string& category, const std::string& name) = 0 ;
 
 			/**
 			 * Indicates that the current test has completed.
 			 *
 			 * @param test_log log of results from the unit test.
 			 */
-			virtual void TestCompleted(const TestLog& test_log) = 0 ;
+			virtual void testCompleted(const TestLog& test_log) = 0 ;
+
+			/**
+			 * Displays a summary after all tests have been run,
+			 *
+			 * @param test_log merged log of all test results.
+			 */
+			virtual void displaySummary(const TestLog& test_log) = 0 ;
 
 		protected:
 			/**

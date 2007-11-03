@@ -42,6 +42,7 @@ TestDriver::runAllTests(AbstractTestReporter& reporter)
 {
 	std::list<AbstractUnitTest*> tests ;
 	TestManager::instance().getAllTests(tests) ;
+	TestLog merged_log ;
 
 	for(std::list<AbstractUnitTest*>::const_iterator citer = tests.begin(); citer != tests.end(); ++citer)
 	{
@@ -49,7 +50,7 @@ TestDriver::runAllTests(AbstractTestReporter& reporter)
 		AbstractUnitTest* test = *citer ;
 		TestLog test_log ;
 
-		reporter.TestStarted(test->getCategory(), test->getName()) ;
+		reporter.testStarted(test->getCategory(), test->getName()) ;
 		try
 		{
 			test->run() ;
@@ -65,9 +66,11 @@ TestDriver::runAllTests(AbstractTestReporter& reporter)
 			test_log.addTestResult(TestResult(test->getName(), TestResult::FAILED_ENUM, msg)) ;
 		}
 
-		reporter.TestCompleted(test->getLog()) ;
+		reporter.testCompleted(test->getLog()) ;
+
+		merged_log.merge(test->getLog()) ;
 	}
 
-	
+	reporter.displaySummary(merged_log) ;
 }
 

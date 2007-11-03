@@ -85,6 +85,15 @@ TestLog::getFailures(std::list<TestResult>& results) const
 	return(results) ;
 }
 
+void
+TestLog::merge(const TestLog& other)
+{
+	for(std::list<TestResult>::const_iterator citer = other.m_results.begin(); citer != other.m_results.end(); ++citer)
+	{
+		m_results.push_back(*citer) ;
+	}
+}
+
 bool
 TestLog::TestResultNameComparator::operator() (const TestResult& x, const TestResult& y) const
 {

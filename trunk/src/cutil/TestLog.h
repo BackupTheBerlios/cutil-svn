@@ -84,6 +84,13 @@ namespace cutil
 			 */
 			std::list<TestResult> getFailures(std::list<TestResult>& results) const ;
 
+			/**
+			 * merges the contents of other with this TestLog
+			 *
+			 * @param other the TestLog to merge with this TestLog
+			 */
+			void merge(const TestLog& other) ;
+
 		private:
 			/** list of test results */
 			std::list<TestResult> m_results ;

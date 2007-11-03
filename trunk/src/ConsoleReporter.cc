@@ -39,7 +39,7 @@ ConsoleReporter::ConsoleReporter()
 }
 
 void
-ConsoleReporter::TestStarted(const std::string& category, const std::string& name)
+ConsoleReporter::testStarted(const std::string& category, const std::string& name)
 {
 	std::cout << "****\n" ;
 	std::cout << "** Category : " << category << "\n" ;
@@ -48,10 +48,10 @@ ConsoleReporter::TestStarted(const std::string& category, const std::string& nam
 }
 
 void
-ConsoleReporter::TestCompleted(const TestLog& test_log)
+ConsoleReporter::testCompleted(const TestLog& test_log)
 {
-	std::list<TestResult> failed_tests;
-	std::list<TestResult> passed_tests;
+	std::list<TestResult> failed_tests ;
+	std::list<TestResult> passed_tests ;
 
 	test_log.getFailures(failed_tests) ;
 	test_log.getPasses(passed_tests) ;
@@ -76,7 +76,59 @@ ConsoleReporter::TestCompleted(const TestLog& test_log)
 		std::cout << "\n" ;
 	}
 
+	// display summary for this test.
+	size_t total_tests = passed_tests.size() + failed_tests.size() ;
+
 	std::cout << "**\n" ;
-	std::cout << "** Test Completed\n" ;
+	std::cout << "** " ;
+	if(failed_tests.empty())
+	{
+		std::cout << "Test Completed : " ;
+		std::cout << passed_tests.size() << "/" << total_tests << " tests passed\n" ;
+	}
+	else
+	{
+		std::cout << "Test Failed : " ;
+		std::cout << passed_tests.size() << "/" << total_tests << " tests passed" ;
+		std::cout << ", " << failed_tests.size() ;
+		if(failed_tests.size() > 1)
+		{
+			std::cout << " test cases failed\n" ;
+		}
+		else
+		{
+			std::cout << " test case failed\n" ;
+		}
+	}
 	std::cout << "****\n" << std::endl ;
+}
+
+void
+ConsoleReporter::displaySummary(const TestLog& test_log)
+{
+	std::list<TestResult> failed_tests ;
+	std::list<TestResult> passed_tests ;
+
+	test_log.getFailures(failed_tests) ;
+	test_log.getPasses(passed_tests) ;
+	size_t total_tests = passed_tests.size() + failed_tests.size() ;
+
+	std::cout << "\n" ;
+	std::cout << "**********************\n" ;
+	std::cout << "  :: Test Summary ::  \n" ;
+	std::cout << "**********************\n\n" ;
+	if(passed_tests.size() != total_tests)
+	{
+		std::cout << " :( Test run Failed!\n\n";
+	}
+	else
+	{
+		std::cout << " :) Test run Passed!\n\n";
+	}
+
+	std::cout << "Total Tests  : " << total_tests << "\n";
+	std::cout << "Tests Passed : " << passed_tests.size() << "\n" ;
+	std::cout << "Tests Failed : " << failed_tests.size() << "\n" ;
+
+	std::cout << std::endl ;
 }
