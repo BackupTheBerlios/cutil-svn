@@ -43,24 +43,22 @@ DefaultTestCase::DefaultTestCase(RefCountPtr<const AbstractTestCase> test_case)
 void
 DefaultTestCase::run(TestLog& log) const
 {
-	// if the test case is wrapping another, invoke that test case and return early
-	// this avoid logging to the log multiple times for a test case.
-	if(isNested())
-	{
-		RefCountPtr<const AbstractTestCase> wrapped = getWrappedTestCase() ;
-		wrapped->run(log) ;
-
-		return ;
-	}
-	
 	try
 	{
-		// invoke the test step closure
-		RefCountPtr<const AbstractClosure<void> > test_step = getTestStep() ;
-		(*test_step.getPtr())() ;
+		if(isNested())
+		{
+			RefCountPtr<const AbstractTestCase> wrapped = getWrappedTestCase() ;
+			wrapped->run(log) ;
+		}
+		else
+		{
+			// invoke the test step closure
+			RefCountPtr<const AbstractClosure<void> > test_step = getTestStep() ;
+			(*test_step.getPtr())() ;
 
-		// if we didn't get an exception, the test must has passed.
-		log.addTestResult(TestResult(getStepName(), TestResult::PASSED_ENUM, getPassMessage())) ;
+			// if we didn't get an exception, the test must has passed.
+			log.addTestResult(TestResult(getStepName(), TestResult::PASSED_ENUM, getPassMessage())) ;
+		}
 	}
 	catch(Exception& e)
 	{

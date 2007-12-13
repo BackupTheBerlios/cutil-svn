@@ -50,6 +50,17 @@ namespace cutil
 			static void areEqual(T expected, T actual, std::string message = std::string("")) ;
 
 			/**
+			 * Determines if not_expected and actual are not equal
+			 * Inequality is determined via the equality operator.
+			 *
+			 * @param notExpected the value actual is not expected to be equal to.
+			 * @param actual the value to be checked
+			 * @param message string added to the exception message
+			 */
+			template <class T>
+			static void areNotEqual(T not_expected, T actual, std::string message = std::string("")) ;
+
+			/**
 			 * Determines if actual is true, throwing a cutil::Exception if actual is not true
 			 *
 			 * @param actual the value to test
@@ -146,6 +157,21 @@ namespace cutil
 			buf << "Assertation Failed: " ;
 			buf << message ;
 			buf << " [expected=" << expected << ",actual=" << actual << "]" ;
+
+			throw(Exception(buf.str())) ;
+		}
+	}
+
+	template <class T>
+	void Assert::areNotEqual(T not_expected, T actual, const std::string message)
+	{
+		bool equal = (not_expected == actual) ;
+		if(equal)
+		{
+			std::ostringstream buf ;
+			buf << "Assertation Failed: " ;
+			buf << message ;
+			buf << " [not_expected=" << not_expected << ",actual=" << actual << "]" ;
 
 			throw(Exception(buf.str())) ;
 		}

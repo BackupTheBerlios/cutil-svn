@@ -53,10 +53,10 @@ const FooEnum FooEnum::ENUM_C(expected_descriptions[2]) ;
 EnumTest::EnumTest() : cutil::AbstractUnitTest("Enum Test", "cutil")
 {}
 
-std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> >
+std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> >
 EnumTest::getTestCases()
 {
-	std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > test_cases ;
+	std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > test_cases ;
 
 	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canIterateOverEnum, "canIterateOverEnum", "", ""));
 	test_cases.push_back(makeTestCase<EnumTest>(this, &EnumTest::canGetFirst, "canGetFirst", "", ""));

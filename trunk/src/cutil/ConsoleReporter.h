@@ -44,6 +44,11 @@ namespace cutil
 			ConsoleReporter() ;
 
 			/**
+			 * Destructor
+			 */
+			virtual ~ConsoleReporter() ;
+
+			/**
 			 * Indicates that the named test has been started.
 			 *
 			 * @param category category of the test started

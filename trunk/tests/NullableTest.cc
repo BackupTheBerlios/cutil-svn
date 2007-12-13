@@ -73,10 +73,10 @@ NullableTest::valueCanBeCleared()
 	cutil::Assert::isFalse(nullable.hasValue()) ;
 }
 
-std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> >
+std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> >
 NullableTest::getTestCases()
 {
-	std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > test_cases ;
+	std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > test_cases ;
 
 	test_cases.push_back(makeTestCase<NullableTest>(this, &NullableTest::defaultValueIsNull, "defaultValueIsNull", "", ""));
 	test_cases.push_back(makeTestCase<NullableTest>(this, &NullableTest::hasValue, "hasValue", "", ""));

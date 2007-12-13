@@ -26,6 +26,7 @@
 #include <cutil/AbstractTestCase.h>
 #include <cutil/DefaultTestCase.h>
 #include <cutil/Closure.h>
+#include <cutil/ExpectedExceptionTestCase.h>
 #include <cutil/RefCountPtr.h>
 
 #include <memory>
@@ -83,7 +84,7 @@ namespace cutil
 			 *
 			 * @return default implementation returns an empty collection.
 			 */
-			virtual std::vector<cutil::RefCountPtr<AbstractTestCase> > getTestCases() ;
+			virtual std::vector<cutil::RefCountPtr<const AbstractTestCase> > getTestCases() ;
 
 			/**
 			 * Gets the nams of this test
@@ -128,7 +129,7 @@ namespace cutil
 			 *
 			 * @param test_cases list of AbstractTestCases to be run.
 			 */
-			void executeTestCases( std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases) ;
+			void executeTestCases(std::vector<cutil::RefCountPtr<const AbstractTestCase> > test_cases) ;
 
 			/**
 			 * Helper method to construct an AbstractTestCase
@@ -140,8 +141,21 @@ namespace cutil
 			 * @param fail_msg user visible message writtin to the test log if the test fails.
 			 */
 			template<class T>
-			cutil::RefCountPtr<cutil::AbstractTestCase>
+			cutil::RefCountPtr<const cutil::AbstractTestCase>
 			makeTestCase(T* obj, void (T::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg) ;
+
+			/**
+			 * Helper method to construct an AbstractTestCase catching a specified exception type.
+			 *
+			 * @param obj unit test instance on which testMethod is to be called.
+			 * @param testMethod function pointer to the test method to be called upon obj
+			 * @param step_name user visible name of the test step
+			 * @param pass_msg user visible message written to the test log if the test step passes
+			 * @param fail_msg user visible message writtin to the test log if the test fails.
+			 */
+			template<class T_test_class, class T_expected_exception>
+			cutil::RefCountPtr<const cutil::AbstractTestCase>
+			makeExpectedExceptionTestCase(T_test_class* obj, void (T_test_class::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg) ;
 
 		private:
 			/** name of this test */
@@ -159,12 +173,27 @@ namespace cutil
 	// template implementation
 
 	template<class T>
-	cutil::RefCountPtr<cutil::AbstractTestCase>
+	cutil::RefCountPtr<const cutil::AbstractTestCase>
 	AbstractUnitTest::makeTestCase(T* obj, void (T::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg)
 	{
 		cutil::RefCountPtr<const cutil::AbstractClosure<void> > test_step(new cutil::Closure0<void, T>(obj, testMethod)) ;
-		cutil::RefCountPtr<cutil::AbstractTestCase> test_case(new cutil::DefaultTestCase(test_step, step_name, pass_msg, fail_msg)) ;
+		cutil::RefCountPtr<const cutil::AbstractTestCase> test_case(new cutil::DefaultTestCase(test_step, step_name, pass_msg, fail_msg)) ;
 		return(test_case) ;
+	}
+
+	template<class T_test_class, class T_expected_exception>
+	cutil::RefCountPtr<const cutil::AbstractTestCase>
+	AbstractUnitTest::makeExpectedExceptionTestCase(T_test_class* obj, void (T_test_class::*testMethod)(), std::string step_name, std::string pass_msg, std::string fail_msg)
+	{
+		cutil::RefCountPtr<const cutil::AbstractClosure<void> > test_step(new cutil::Closure0<void, T_test_class>(obj, testMethod)) ;
+
+		// catched specified exception type.
+		cutil::RefCountPtr<const cutil::AbstractTestCase> test_case(new cutil::ExpectedExceptionTestCase<T_expected_exception>(test_step, step_name, pass_msg, fail_msg)) ;
+		
+		// catches anything else, marking test case as failed.
+		cutil::RefCountPtr<const cutil::AbstractTestCase> wrapper(new cutil::DefaultTestCase(test_case)) ;
+
+		return(wrapper) ;
 	}
 
 } /* namespace cutil */

@@ -49,14 +49,14 @@ AbstractUnitTest::AbstractUnitTest(std::string name, std::string category)
 void
 AbstractUnitTest::run()
 {
-	std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases = getTestCases() ;
+	std::vector<cutil::RefCountPtr<const AbstractTestCase> > test_cases = getTestCases() ;
 	executeTestCases(test_cases) ;
 }
 
-std::vector<cutil::RefCountPtr<AbstractTestCase> >
+std::vector<cutil::RefCountPtr<const AbstractTestCase> >
 AbstractUnitTest::getTestCases()
 {
-	std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases ;
+	std::vector<cutil::RefCountPtr<const AbstractTestCase> > test_cases ;
 
 	// copy on return
 	return(test_cases) ;
@@ -87,11 +87,11 @@ AbstractUnitTest::getLog()
 }
 
 void
-AbstractUnitTest::executeTestCases(std::vector<cutil::RefCountPtr<AbstractTestCase> > test_cases)
+AbstractUnitTest::executeTestCases(std::vector<cutil::RefCountPtr<const AbstractTestCase> > test_cases)
 {
 	for(std::vector<AbstractTestCase>::size_type i = 0; i < test_cases.size(); i++)
 	{
-		cutil::RefCountPtr<AbstractTestCase> test_case = test_cases[i] ;
+		cutil::RefCountPtr<const AbstractTestCase> test_case = test_cases[i] ;
 		test_case->run(*m_log) ;
 	}
 }

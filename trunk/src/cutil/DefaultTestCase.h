@@ -55,7 +55,7 @@ namespace cutil
 			/**
 			 * Constructs a new instance of a DefaultTestCase wrapping another AbstractTestCase instance.
 			 *
-			 * @param test_case anexisting AbstractTestCase to be wrapped by this new instance.
+			 * @param test_case an existing AbstractTestCase to be wrapped by this new instance.
 			 */
 			DefaultTestCase(RefCountPtr<const AbstractTestCase> test_case) ;
 

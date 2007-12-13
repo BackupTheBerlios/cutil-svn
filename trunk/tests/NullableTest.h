@@ -37,13 +37,13 @@ namespace cutil
 		class NullableTest : public cutil::AbstractUnitTest
 		{
 			public:
-			NullableTest() ;
-			virtual std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > getTestCases() ;
+				NullableTest() ;
+				virtual std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > getTestCases() ;
 
-			void defaultValueIsNull() ;
-			void hasValue() ;
-			void valueCanBeSet() ;
-			void valueCanBeCleared() ;
+				void defaultValueIsNull() ;
+				void hasValue() ;
+				void valueCanBeSet() ;
+				void valueCanBeCleared() ;
 		} ;
 	}
 }

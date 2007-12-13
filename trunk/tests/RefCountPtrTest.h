@@ -35,7 +35,7 @@ namespace cutil
 		{
 			public:
 				RefCountPtrTest() ;
-				std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > getTestCases() ;
+				std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > getTestCases() ;
 
 				void pointsToNullOnConstruction() ;
 				void refCountIncreasesWhenAssigned() ;

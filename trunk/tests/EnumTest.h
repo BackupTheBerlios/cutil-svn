@@ -35,7 +35,7 @@ namespace cutil
 		{
 			public:
 				EnumTest() ;
-				std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > getTestCases() ;
+				std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > getTestCases() ;
 
 				void canIterateOverEnum() ;
 				void canGetFirst() ;

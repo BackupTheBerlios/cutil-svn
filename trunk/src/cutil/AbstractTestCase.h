@@ -37,9 +37,9 @@ namespace cutil
 	 * AbstractTestCase provides a wrapping around a unit test, test case or test step.
 	 * AbstractTestCase is useful for wrapping a test case in such a way as to
 	 * handle the results of a test, for example to wrap the running of a test
-	 * step catching exception and failing the test with a suitable log message.
+	 * step catching any unexpected exception and failing the test with a suitable log message.
 	 *
-	 * AbstractTestCase implementations should also be capcble of wrapping other
+	 * AbstractTestCase implementations should also be capable of wrapping other
 	 * AbstractTestCase instances, therefore allowing the building up of complex
 	 * AbstractTestCase execution. This may be useful, for example to have one
 	 * implementation catch certain common exceptions types, which is wrapped by

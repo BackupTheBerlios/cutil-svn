@@ -15,6 +15,7 @@ library_include_HEADERS = \
 	AbstractOutputStream.h \
 	AbstractShape.h \
 	AbstractTestCase.h \
+	AbstractTestReporter.h \
 	AbstractUnitTest.h \
 	Assert.h \
 	BitHack.h \
@@ -26,6 +27,7 @@ library_include_HEADERS = \
 	Dimension.h \
 	Enum.h \
 	Exception.h \
+	ExpectedExceptionTestCase.h \
 	FilePath.h \
 	InetAddress.h \
 	InetException.h \
@@ -33,10 +35,13 @@ library_include_HEADERS = \
 	MapIterator.h \
 	NamedPipe.h \
 	NamedPipeException.h \
+	Nullable.h \
 	Plugin.h \
 	PluginFactory.h \
 	PluginInfo.h \
 	PluginManager.h \
+	PluginManagerException.h \
+	PluginNameTransform.h \
 	Point.h \
 	Rectangle.h \
 	RefCountPtr.h \

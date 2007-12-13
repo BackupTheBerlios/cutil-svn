@@ -38,6 +38,10 @@ ConsoleReporter::ConsoleReporter()
 {
 }
 
+ConsoleReporter::~ConsoleReporter()
+{
+}
+
 void
 ConsoleReporter::testStarted(const std::string& category, const std::string& name)
 {

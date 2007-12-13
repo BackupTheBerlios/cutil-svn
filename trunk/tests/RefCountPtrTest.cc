@@ -85,10 +85,10 @@ class Foo
 RefCountPtrTest::RefCountPtrTest() : cutil::AbstractUnitTest("RefCountPtr Test", "cutil")
 {}
 
-std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> >
+std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> >
 RefCountPtrTest::getTestCases()
 {
-	std::vector<cutil::RefCountPtr<cutil::AbstractTestCase> > test_cases ;
+	std::vector<cutil::RefCountPtr<const cutil::AbstractTestCase> > test_cases ;
 
 	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::pointsToNullOnConstruction, "pointsToNullOnConstruction", "", ""));
 	test_cases.push_back(makeTestCase<RefCountPtrTest>(this, &RefCountPtrTest::refCountIncreasesWhenAssigned, "refCountIncreasesWhenAssigned", "", ""));
