@@ -22,6 +22,7 @@
 #include <cutil/NamedPipe.h>
 
 #include <cerrno>
+#include <cstring>
 #include <string>
 #include <sstream>
 

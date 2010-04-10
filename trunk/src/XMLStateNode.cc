@@ -28,6 +28,7 @@
 #include <libxml++/nodes/element.h>
 #include <libxml++/nodes/node.h>
 
+#include <cstdlib>
 #include <sstream>
 
 using cutil::StateNode ;

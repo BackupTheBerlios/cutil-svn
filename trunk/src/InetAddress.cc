@@ -30,6 +30,8 @@
 #include <sys/types.h>
 
 #include <cerrno>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 
 using cutil::InetAddress ;
@@ -256,7 +258,7 @@ InetAddress::isIpAddress(const std::string& ipAddress)
 				if(valid)
 				{
 					// get the int value of the chars
-					int val = atoi(s.c_str()) ;
+					int val = ::atoi(s.c_str()) ;
 					if((val < 0) || (val > 255))
 					{
 						valid = false ;
@@ -306,7 +308,7 @@ InetAddress::initializeFromIpAddress(const std::string& ipAddress) throw(InetExc
 		int errcpy = errno ;
 
 		// clear the in_addr struct tl leave us in a sensible state
-		memset(&theInetAddress, 0, sizeof(theInetAddress)) ;
+		::memset(&theInetAddress, 0, sizeof(theInetAddress)) ;
 
 		switch(errcpy)
 		{

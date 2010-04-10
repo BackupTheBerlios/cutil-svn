@@ -32,6 +32,7 @@
 #include <unistd.h>
 
 #include <cerrno>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <sstream>

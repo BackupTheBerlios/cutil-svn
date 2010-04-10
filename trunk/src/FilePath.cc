@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include <cerrno>
+#include <cstring>
 
 
 using cutil::FilePath ;

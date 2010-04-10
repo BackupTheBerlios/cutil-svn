@@ -22,6 +22,7 @@
 #ifndef _CUTIL_ENUM_H_
 #define _CUTIL_ENUM_H_
 
+#include <algorithm>
 #include <functional>
 #include <set>
 #include <string>

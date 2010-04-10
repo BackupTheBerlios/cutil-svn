@@ -23,6 +23,8 @@
 #include <cutil/AbstractInputStream.h>
 #include <cutil/Conversion.h>
 
+#include <cstring>
+
 using cutil::InputReader ;
 
 //-------------------------------------------------------------------------------//

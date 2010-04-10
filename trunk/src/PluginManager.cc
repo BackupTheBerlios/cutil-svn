@@ -29,6 +29,7 @@
 #include <cutil/SharedLibrary.h>
 #include <cutil/SharedLibraryException.h>
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <sstream>
